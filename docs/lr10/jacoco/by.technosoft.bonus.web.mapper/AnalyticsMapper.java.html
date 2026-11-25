@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AnalyticsMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">AnalyticsMapper.java</span></div><h1>AnalyticsMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import java.time.YearMonth;
+import java.util.Locale;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.service.query.AnalyticsPeriod;
+import by.technosoft.bonus.service.query.AnalyticsQueryService.Comparison;
+import by.technosoft.bonus.service.query.AnalyticsQueryService.Dashboard;
+import by.technosoft.bonus.web.dto.AnalyticsDashboardDto;
+import by.technosoft.bonus.web.dto.AnalyticsDashboardDto.DepartmentComparison;
+import by.technosoft.bonus.web.dto.AnalyticsDashboardDto.MonthlyFlow;
+
+/** Дашборд эффективности (UC11) → JSON с подписями периодов на русском. */
+@Component
+<span class="fc" id="L17">public class AnalyticsMapper {</span>
+
+<span class="fc" id="L19">    private static final String[] MONTHS = {&quot;январь&quot;, &quot;февраль&quot;, &quot;март&quot;, &quot;апрель&quot;, &quot;май&quot;, &quot;июнь&quot;, &quot;июль&quot;,</span>
+            &quot;август&quot;, &quot;сентябрь&quot;, &quot;октябрь&quot;, &quot;ноябрь&quot;, &quot;декабрь&quot;};
+<span class="fc" id="L21">    private static final String[] SHORT_MONTHS = {&quot;янв&quot;, &quot;фев&quot;, &quot;мар&quot;, &quot;апр&quot;, &quot;май&quot;, &quot;июн&quot;, &quot;июл&quot;, &quot;авг&quot;, &quot;сен&quot;,</span>
+            &quot;окт&quot;, &quot;ноя&quot;, &quot;дек&quot;};
+
+    public AnalyticsDashboardDto toDto(Dashboard d) {
+<span class="fc" id="L25">        int months = d.period().months();</span>
+<span class="fc" id="L26">        return new AnalyticsDashboardDto(</span>
+<span class="fc" id="L27">                code(d.period()),</span>
+<span class="fc" id="L28">                label(d.currentStart(), months),</span>
+<span class="fc" id="L29">                label(d.previousStart(), months),</span>
+<span class="fc" id="L30">                comparison(d.averageBonus()),</span>
+<span class="fc" id="L31">                comparison(d.programConversion()),</span>
+<span class="fc" id="L32">                comparison(d.totalAccrued()),</span>
+<span class="fc" id="L33">                comparison(d.totalSpent()),</span>
+<span class="fc" id="L34">                d.byDepartment().stream()</span>
+<span class="fc" id="L35">                        .map(x -&gt; new DepartmentComparison(x.department(), x.current(), x.previous())).toList(),</span>
+<span class="fc" id="L36">                d.monthly().stream()</span>
+<span class="fc" id="L37">                        .map(m -&gt; new MonthlyFlow(shortMonth(m.month()), m.accrued(), m.spent())).toList(),</span>
+<span class="fc" id="L38">                d.partial());</span>
+    }
+
+    public static AnalyticsPeriod parse(String code) {
+<span class="fc" id="L42">        return AnalyticsPeriod.valueOf(code.toUpperCase(Locale.ROOT));</span>
+    }
+
+    static String code(AnalyticsPeriod period) {
+<span class="fc" id="L46">        return period.name().toLowerCase(Locale.ROOT);</span>
+    }
+
+    /** «ноябрь 2026» или «сен – ноя 2026». */
+    static String label(YearMonth start, int months) {
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (months == 1) {</span>
+<span class="nc" id="L52">            return MONTHS[start.getMonthValue() - 1] + &quot; &quot; + start.getYear();</span>
+        }
+<span class="fc" id="L54">        YearMonth end = start.plusMonths(months - 1L);</span>
+<span class="fc" id="L55">        return shortMonth(start) + &quot; – &quot; + shortMonth(end) + &quot; &quot; + end.getYear();</span>
+    }
+
+    private static String shortMonth(YearMonth month) {
+<span class="fc" id="L59">        return SHORT_MONTHS[month.getMonthValue() - 1];</span>
+    }
+
+    private static AnalyticsDashboardDto.Comparison comparison(Comparison c) {
+<span class="fc" id="L63">        return new AnalyticsDashboardDto.Comparison(c.current(), c.previous());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.auth</a> &gt; <span class="el_source">AuthenticationService.java</span></div><h1>AuthenticationService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.auth;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.repository.AppUserRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+import by.technosoft.bonus.service.audit.AuditTrail;
+import by.technosoft.bonus.service.exception.InvalidCredentialsException;
+import by.technosoft.bonus.service.exception.UserBlockedException;
+
+/**
+ * Аутентификация (SEC-1): проверка email и пароля (BCrypt, DATA-4), фиксация входа и выхода в аудите.
+ * Выпуск токена — забота REST-слоя; сервис работает только с учётными записями.
+ */
+@Service
+public class AuthenticationService {
+
+    private final AppUserRepository userRepository;
+    private final AccessPolicy accessPolicy;
+    private final PasswordEncoder passwordEncoder;
+    private final AuditTrail auditTrail;
+    private final Clock clock;
+    /**
+     * Хеш случайного пароля: сверяется, когда email не найден, чтобы время ответа
+     * не выдавало, есть ли такой пользователь.
+     */
+    private final String dummyHash;
+
+    public AuthenticationService(AppUserRepository userRepository, AccessPolicy accessPolicy,
+<span class="fc" id="L39">                                 PasswordEncoder passwordEncoder, AuditTrail auditTrail, Clock clock) {</span>
+<span class="fc" id="L40">        this.userRepository = userRepository;</span>
+<span class="fc" id="L41">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L42">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L43">        this.auditTrail = auditTrail;</span>
+<span class="fc" id="L44">        this.clock = clock;</span>
+<span class="fc" id="L45">        this.dummyHash = passwordEncoder.encode(UUID.randomUUID().toString());</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Вход по email и паролю. Неверная пара — {@link InvalidCredentialsException} (одинаково для
+     * неизвестного email и неверного пароля); заблокированная учётная запись — {@link UserBlockedException}.
+     */
+    @Transactional
+    public AppUser login(String email, String password) {
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        Optional&lt;AppUser&gt; found = userRepository.findByEmployeeEmailIgnoreCase(email == null ? &quot;&quot; : email.trim());</span>
+<span class="fc" id="L55">        String hash = found.map(AppUser::getPasswordHash).orElse(dummyHash);</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        boolean matches = passwordEncoder.matches(password == null ? &quot;&quot; : password, hash);</span>
+<span class="fc bfc" id="L57" title="All 4 branches covered.">        if (found.isEmpty() || !matches) {</span>
+<span class="fc" id="L58">            throw new InvalidCredentialsException();</span>
+        }
+<span class="fc" id="L60">        AppUser user = found.get();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (!user.isActive()) {</span>
+<span class="fc" id="L62">            throw new UserBlockedException();</span>
+        }
+<span class="fc" id="L64">        userRepository.touchLastLogin(user.getId(), OffsetDateTime.now(clock));</span>
+<span class="fc" id="L65">        auditTrail.record(user.getId(), &quot;Вход в систему&quot;, &quot;session&quot;, user.getId(),</span>
+<span class="fc" id="L66">                Map.of(&quot;label&quot;, user.getEmployee().getEmail()));</span>
+<span class="fc" id="L67">        return accessPolicy.requireActiveUser(user.getId());</span>
+    }
+
+    /** Активная учётная запись по id из токена (роль и сотрудник загружены). */
+    @Transactional(readOnly = true)
+    public AppUser activeUser(Long userId) {
+<span class="fc" id="L73">        return accessPolicy.requireActiveUser(userId);</span>
+    }
+
+    /** Выход: токен без состояния удаляет клиент, сервер фиксирует событие в аудите. */
+    @Transactional
+    public void logout(Long userId) {
+<span class="fc" id="L79">        AppUser user = accessPolicy.requireActiveUser(userId);</span>
+<span class="fc" id="L80">        auditTrail.record(user.getId(), &quot;Выход из системы&quot;, &quot;session&quot;, user.getId(),</span>
+<span class="fc" id="L81">                Map.of(&quot;label&quot;, user.getEmployee().getEmail()));</span>
+<span class="fc" id="L82">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

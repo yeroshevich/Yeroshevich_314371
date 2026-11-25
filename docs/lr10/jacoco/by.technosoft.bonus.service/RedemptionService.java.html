@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RedemptionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">RedemptionService.java</span></div><h1>RedemptionService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationBasis;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.Program;
+import by.technosoft.bonus.repository.AppUserRepository;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.repository.ProgramRepository;
+import by.technosoft.bonus.service.dto.OperationView;
+import by.technosoft.bonus.service.dto.RedemptionResult;
+import by.technosoft.bonus.service.event.OperationAction;
+import by.technosoft.bonus.service.event.OperationRegisteredEvent;
+import by.technosoft.bonus.service.exception.AccountBlockedException;
+import by.technosoft.bonus.service.exception.InsufficientBalanceException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import by.technosoft.bonus.service.exception.ProgramUnavailableException;
+
+/**
+ * Использование баллов на программы мотивации (UC3). Баллы тратятся только внутри
+ * каталога программ — конвертации в зарплату нет (BR-3).
+ */
+@Service
+public class RedemptionService {
+
+    private final ProgramRepository programRepository;
+    private final BonusAccountRepository accountRepository;
+    private final AppUserRepository userRepository;
+    private final OperationRepository operationRepository;
+    private final OperationNumberGenerator numberGenerator;
+    private final ApplicationEventPublisher events;
+    private final Clock clock;
+
+    public RedemptionService(ProgramRepository programRepository,
+                             BonusAccountRepository accountRepository,
+                             AppUserRepository userRepository,
+                             OperationRepository operationRepository,
+                             OperationNumberGenerator numberGenerator,
+                             ApplicationEventPublisher events,
+<span class="fc" id="L51">                             Clock clock) {</span>
+<span class="fc" id="L52">        this.programRepository = programRepository;</span>
+<span class="fc" id="L53">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L54">        this.userRepository = userRepository;</span>
+<span class="fc" id="L55">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L56">        this.numberGenerator = numberGenerator;</span>
+<span class="fc" id="L57">        this.events = events;</span>
+<span class="fc" id="L58">        this.clock = clock;</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * UC3 «Использование бонусов»: программа активна, счёт активен, баланс ≥ стоимости.
+     * Счёт блокируется (SELECT … FOR UPDATE) до конца транзакции, поэтому два параллельных
+     * списания не уведут баланс в минус; создаётся операция «written_off» с суммой −стоимость.
+     */
+    @Transactional
+    public RedemptionResult redeem(Long employeeId, Long programId) {
+<span class="fc" id="L68">        Program program = programRepository.findById(programId)</span>
+<span class="fc" id="L69">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Программа не найдена. Обновите каталог.&quot;));</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (!program.isActive()) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            String why = program.getInactiveReason() == null ? &quot;&quot; : &quot; &quot; + program.getInactiveReason();</span>
+<span class="fc" id="L72">            throw new ProgramUnavailableException(&quot;Программа «&quot; + program.getName() + &quot;» сейчас недоступна.&quot; + why);</span>
+        }
+<span class="fc" id="L74">        BonusAccount account = accountRepository.lockByEmployeeId(employeeId)</span>
+<span class="pc" id="L75">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;К учётной записи не привязан бонусный счёт.&quot;));</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (!account.isActive()) {</span>
+<span class="fc" id="L77">            throw new AccountBlockedException(&quot;Баланс недоступен, обратитесь к HR.&quot;);</span>
+        }
+<span class="fc" id="L79">        int cost = program.getCost();</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (account.getBalance() &lt; cost) {</span>
+<span class="fc" id="L81">            throw new InsufficientBalanceException(account.getBalance(), cost,</span>
+<span class="fc" id="L82">                    &quot;Не хватает &quot; + PointsFormat.format(cost - account.getBalance()) + &quot;: программа стоит &quot;</span>
+<span class="fc" id="L83">                            + PointsFormat.format(cost) + &quot;, на счёте &quot; + PointsFormat.format(account.getBalance()) + &quot;.&quot;);</span>
+        }
+
+<span class="fc" id="L86">        AppUser owner = userRepository.findByEmployeeId(employeeId).orElse(null);</span>
+<span class="fc" id="L87">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc" id="L88">        Operation op = Operation.create(numberGenerator.next(), account, OperationType.WRITEOFF,</span>
+                        OperationStatus.WRITTEN_OFF, OperationBasis.PROGRAM, -cost,
+<span class="fc" id="L90">                        &quot;Программа «&quot; + program.getName() + &quot;»&quot;, owner, now)</span>
+<span class="fc" id="L91">                .withProgram(program);</span>
+<span class="fc" id="L92">        account.applyDelta(-cost, now);</span>
+<span class="fc" id="L93">        operationRepository.save(op);</span>
+<span class="fc" id="L94">        events.publishEvent(OperationRegisteredEvent.of(OperationAction.REDEMPTION, op, owner, null));</span>
+<span class="fc" id="L95">        return new RedemptionResult(OperationView.of(op), account.getBalance());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

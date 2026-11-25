@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReviewDecision.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">ReviewDecision.java</span></div><h1>ReviewDecision.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+/** Решение финансового отдела по операции (operation_review.decision). */
+<span class="fc" id="L4">public enum ReviewDecision implements PersistentEnum {</span>
+    /** Подтверждено. */
+<span class="fc" id="L6">    APPROVED(&quot;approved&quot;),</span>
+    /** Заблокировано. */
+<span class="fc" id="L8">    BLOCKED(&quot;blocked&quot;),</span>
+    /** Помечено как спорное. */
+<span class="fc" id="L10">    DISPUTED(&quot;disputed&quot;);</span>
+
+    private final String dbValue;
+
+<span class="fc" id="L14">    ReviewDecision(String dbValue) {</span>
+<span class="fc" id="L15">        this.dbValue = dbValue;</span>
+<span class="fc" id="L16">    }</span>
+
+    @Override
+    public String dbValue() {
+<span class="fc" id="L20">        return dbValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

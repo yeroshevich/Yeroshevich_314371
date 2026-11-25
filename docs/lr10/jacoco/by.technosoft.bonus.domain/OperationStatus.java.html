@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">OperationStatus.java</span></div><h1>OperationStatus.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+/**
+ * Статус операции (operation.status) и допустимые переходы жизненного цикла.
+ * &lt;pre&gt;
+ *   [создание] → ACCRUED | WRITTEN_OFF | PENDING | CORRECTED | CANCELLED
+ *   PENDING   → ACCRUED | CORRECTED | CANCELLED   (подтверждение финотделом)
+ *   PENDING   → BLOCKED                           (блокировка финотделом)
+ *   ACCRUED   → CANCELLED                         (заменена корректировкой или отменена, UC7)
+ *   CORRECTED → CANCELLED                         (повторная корректировка, UC7)
+ *   WRITTEN_OFF, BLOCKED, CANCELLED — конечные состояния
+ * &lt;/pre&gt;
+ */
+<span class="fc" id="L17">public enum OperationStatus implements PersistentEnum {</span>
+    /** Начислено: сумма учтена в балансе. */
+<span class="fc" id="L19">    ACCRUED(&quot;accrued&quot;),</span>
+    /** Списано на программу мотивации: сумма учтена в балансе. */
+<span class="fc" id="L21">    WRITTEN_OFF(&quot;written_off&quot;),</span>
+    /** Корректировка проведена: новая сумма учтена в балансе. */
+<span class="fc" id="L23">    CORRECTED(&quot;corrected&quot;),</span>
+    /** На согласовании финотдела: баланс не изменён. */
+<span class="fc" id="L25">    PENDING(&quot;pending&quot;),</span>
+    /** Заблокировано финотделом: баланс не изменён. */
+<span class="fc" id="L27">    BLOCKED(&quot;blocked&quot;),</span>
+    /** Отменено (заменено корректировкой): в балансе не учитывается. */
+<span class="fc" id="L29">    CANCELLED(&quot;cancelled&quot;);</span>
+
+    /** Статусы, суммы которых образуют баланс счёта (BR-6). */
+<span class="fc" id="L32">    public static final Set&lt;OperationStatus&gt; SETTLED = EnumSet.of(ACCRUED, WRITTEN_OFF, CORRECTED);</span>
+
+    private final String dbValue;
+
+<span class="fc" id="L36">    OperationStatus(String dbValue) {</span>
+<span class="fc" id="L37">        this.dbValue = dbValue;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    public String dbValue() {
+<span class="fc" id="L42">        return dbValue;</span>
+    }
+
+    /** Учитывается ли сумма операции в этом статусе в балансе счёта. */
+    public boolean isSettled() {
+<span class="fc" id="L47">        return SETTLED.contains(this);</span>
+    }
+
+    /** Допустим ли переход из текущего статуса в {@code target}. */
+    public boolean canTransitionTo(OperationStatus target) {
+<span class="fc bfc" id="L52" title="All 3 branches covered.">        return switch (this) {</span>
+<span class="fc bfc" id="L53" title="All 8 branches covered.">            case PENDING -&gt; target == ACCRUED || target == CORRECTED || target == CANCELLED || target == BLOCKED;</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            case ACCRUED, CORRECTED -&gt; target == CANCELLED;</span>
+<span class="fc" id="L55">            case WRITTEN_OFF, BLOCKED, CANCELLED -&gt; false;</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

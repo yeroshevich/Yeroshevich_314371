@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Operation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">Operation.java</span></div><h1>Operation.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.time.OffsetDateTime;
+import java.util.Objects;
+
+import org.springframework.data.domain.Persistable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+/**
+ * Операция по бонусному счёту (таблица operation, DATA-1: полная история движений).
+ * Идентификатор назначается заранее из последовательности вместе с номером
+ * (см. {@link OperationNumber}), поэтому сущность реализует {@link Persistable}:
+ * Spring Data выполняет INSERT без предварительного SELECT.
+ */
+@Entity
+@Table(name = &quot;operation&quot;)
+public class Operation implements Persistable&lt;Long&gt; {
+
+    /** Максимальная длина причины в схеме. */
+    public static final int REASON_LENGTH = 300;
+
+    @Id
+    private Long id;
+
+    @Column(name = &quot;number&quot;, nullable = false, length = 12)
+    private String number;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;account_id&quot;, nullable = false)
+    private BonusAccount account;
+
+    @Column(name = &quot;type&quot;, nullable = false, length = 10)
+    private OperationType type;
+
+    @Column(name = &quot;status&quot;, nullable = false, length = 12)
+    private OperationStatus status;
+
+    @Column(name = &quot;basis&quot;, nullable = false, length = 12)
+    private OperationBasis basis;
+
+    /** Сумма со знаком: «+» начисление, «−» списание. */
+    @Column(name = &quot;amount&quot;, nullable = false)
+    private int amount;
+
+    /** Сумма корректируемой операции до корректировки (UC7). */
+    @Column(name = &quot;original_amount&quot;)
+    private Integer originalAmount;
+
+    @Column(name = &quot;reason&quot;, nullable = false, length = REASON_LENGTH)
+    private String reason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;rule_id&quot;)
+    private AccrualRule rule;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;campaign_id&quot;)
+    private Campaign campaign;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;program_id&quot;)
+    private Program program;
+
+    /** Событие-источник автоначисления; UNIQUE — одно событие, одно начисление (NFR-4). */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;event_id&quot;)
+    private BusinessEvent event;
+
+    /** Корректируемая операция (UC7). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;corrects_id&quot;)
+    private Operation corrects;
+
+    /** Автор; {@code null} — автоматическое начисление. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;created_by&quot;)
+    private AppUser createdBy;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Transient
+    private boolean isNew;
+
+<span class="fc" id="L96">    protected Operation() {</span>
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * Создаёт новую операцию. Необязательные связи задаются методами {@code with…}.
+     */
+    public static Operation create(OperationNumber number, BonusAccount account, OperationType type,
+                                   OperationStatus status, OperationBasis basis, int amount, String reason,
+                                   AppUser createdBy, OffsetDateTime createdAt) {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (amount == 0) {</span>
+<span class="fc" id="L106">            throw new IllegalArgumentException(&quot;Сумма операции не может быть нулевой&quot;);</span>
+        }
+<span class="fc" id="L108">        Objects.requireNonNull(reason, &quot;reason&quot;);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (reason.length() &gt; REASON_LENGTH) {</span>
+<span class="fc" id="L110">            throw new IllegalArgumentException(&quot;Причина длиннее &quot; + REASON_LENGTH + &quot; символов&quot;);</span>
+        }
+<span class="fc" id="L112">        Operation op = new Operation();</span>
+<span class="fc" id="L113">        op.id = number.id();</span>
+<span class="fc" id="L114">        op.number = number.number();</span>
+<span class="fc" id="L115">        op.account = Objects.requireNonNull(account, &quot;account&quot;);</span>
+<span class="fc" id="L116">        op.type = Objects.requireNonNull(type, &quot;type&quot;);</span>
+<span class="fc" id="L117">        op.status = Objects.requireNonNull(status, &quot;status&quot;);</span>
+<span class="fc" id="L118">        op.basis = Objects.requireNonNull(basis, &quot;basis&quot;);</span>
+<span class="fc" id="L119">        op.amount = amount;</span>
+<span class="fc" id="L120">        op.reason = reason;</span>
+<span class="fc" id="L121">        op.createdBy = createdBy;</span>
+<span class="fc" id="L122">        op.createdAt = Objects.requireNonNull(createdAt, &quot;createdAt&quot;);</span>
+<span class="fc" id="L123">        op.isNew = true;</span>
+<span class="fc" id="L124">        return op;</span>
+    }
+
+    public Operation withRule(AccrualRule rule) {
+<span class="fc" id="L128">        this.rule = rule;</span>
+<span class="fc" id="L129">        return this;</span>
+    }
+
+    public Operation withCampaign(Campaign campaign) {
+<span class="fc" id="L133">        this.campaign = campaign;</span>
+<span class="fc" id="L134">        return this;</span>
+    }
+
+    public Operation withProgram(Program program) {
+<span class="fc" id="L138">        this.program = program;</span>
+<span class="fc" id="L139">        return this;</span>
+    }
+
+    public Operation withEvent(BusinessEvent event) {
+<span class="fc" id="L143">        this.event = event;</span>
+<span class="fc" id="L144">        return this;</span>
+    }
+
+    /** Помечает операцию как корректировку операции {@code original} (UC7). */
+    public Operation correcting(Operation original) {
+<span class="fc" id="L149">        this.corrects = original;</span>
+<span class="fc" id="L150">        this.originalAmount = original.getAmount();</span>
+<span class="fc" id="L151">        return this;</span>
+    }
+
+    /**
+     * Переводит операцию в статус {@code target} по диаграмме состояний
+     * ({@link OperationStatus#canTransitionTo(OperationStatus)}).
+     */
+    public void transitionTo(OperationStatus target) {
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (!status.canTransitionTo(target)) {</span>
+<span class="fc" id="L160">            throw new IllegalStateException(</span>
+                    &quot;Недопустимый переход операции &quot; + number + &quot;: &quot; + status + &quot; → &quot; + target);
+        }
+<span class="fc" id="L163">        this.status = target;</span>
+<span class="fc" id="L164">    }</span>
+
+    /** Корректировка-отмена: отрицательная сумма у операции типа correction. */
+    public boolean isCancellationRequest() {
+<span class="pc bpc" id="L168" title="1 of 4 branches missed.">        return type == OperationType.CORRECTION &amp;&amp; amount &lt; 0;</span>
+    }
+
+    /** Изменение баланса, которое даст проведение этой корректировки: новая сумма минус исходная. */
+    public int correctionDelta() {
+<span class="pc bpc" id="L173" title="1 of 4 branches missed.">        if (type != OperationType.CORRECTION || originalAmount == null) {</span>
+<span class="fc" id="L174">            throw new IllegalStateException(&quot;Операция &quot; + number + &quot; не является корректировкой&quot;);</span>
+        }
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        return isCancellationRequest() ? -originalAmount : amount - originalAmount;</span>
+    }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+<span class="fc" id="L182">        this.isNew = false;</span>
+<span class="fc" id="L183">    }</span>
+
+    @Override
+    public boolean isNew() {
+<span class="fc" id="L187">        return isNew;</span>
+    }
+
+    @Override
+    public Long getId() {
+<span class="fc" id="L192">        return id;</span>
+    }
+
+    public String getNumber() {
+<span class="fc" id="L196">        return number;</span>
+    }
+
+    public BonusAccount getAccount() {
+<span class="fc" id="L200">        return account;</span>
+    }
+
+    public OperationType getType() {
+<span class="fc" id="L204">        return type;</span>
+    }
+
+    public OperationStatus getStatus() {
+<span class="fc" id="L208">        return status;</span>
+    }
+
+    public OperationBasis getBasis() {
+<span class="fc" id="L212">        return basis;</span>
+    }
+
+    public int getAmount() {
+<span class="fc" id="L216">        return amount;</span>
+    }
+
+    public Integer getOriginalAmount() {
+<span class="fc" id="L220">        return originalAmount;</span>
+    }
+
+    public String getReason() {
+<span class="fc" id="L224">        return reason;</span>
+    }
+
+    public AccrualRule getRule() {
+<span class="fc" id="L228">        return rule;</span>
+    }
+
+    public Campaign getCampaign() {
+<span class="fc" id="L232">        return campaign;</span>
+    }
+
+    public Program getProgram() {
+<span class="fc" id="L236">        return program;</span>
+    }
+
+    public BusinessEvent getEvent() {
+<span class="fc" id="L240">        return event;</span>
+    }
+
+    public Operation getCorrects() {
+<span class="fc" id="L244">        return corrects;</span>
+    }
+
+    public AppUser getCreatedBy() {
+<span class="fc" id="L248">        return createdBy;</span>
+    }
+
+    public OffsetDateTime getCreatedAt() {
+<span class="fc" id="L252">        return createdAt;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

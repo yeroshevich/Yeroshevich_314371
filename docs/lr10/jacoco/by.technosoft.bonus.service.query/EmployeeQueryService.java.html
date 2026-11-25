@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">EmployeeQueryService.java</span></div><h1>EmployeeQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import static by.technosoft.bonus.repository.OperationSpecifications.createdFrom;
+import static by.technosoft.bonus.repository.OperationSpecifications.employeeIn;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.KpiResult;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.EmployeeRepository;
+import by.technosoft.bonus.repository.KpiResultRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+
+/**
+ * Чтение сотрудников с учётом области ответственности (SEC-3): руководитель видит только
+ * свою команду, HR, финотдел и администратор — всех сотрудников.
+ */
+@Service
+@Transactional(readOnly = true)
+public class EmployeeQueryService {
+
+    /** Сотрудник и выполнение KPI за текущий период, %. */
+<span class="nc" id="L40">    public record EmployeeRow(Employee employee, int kpiCompletion) {</span>
+    }
+
+    /** Строка экрана «Моя команда»: сотрудник, KPI, счёт и начислено за текущий месяц. */
+<span class="nc" id="L44">    public record TeamMemberRow(Employee employee, int kpiCompletion, BonusAccount account, int accruedThisMonth) {</span>
+    }
+
+    private final AccessPolicy accessPolicy;
+    private final EmployeeRepository employeeRepository;
+    private final BonusAccountRepository accountRepository;
+    private final OperationRepository operationRepository;
+    private final KpiResultRepository kpiResultRepository;
+    private final Clock clock;
+
+    public EmployeeQueryService(AccessPolicy accessPolicy,
+                                EmployeeRepository employeeRepository,
+                                BonusAccountRepository accountRepository,
+                                OperationRepository operationRepository,
+                                KpiResultRepository kpiResultRepository,
+<span class="fc" id="L59">                                Clock clock) {</span>
+<span class="fc" id="L60">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L61">        this.employeeRepository = employeeRepository;</span>
+<span class="fc" id="L62">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L63">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L64">        this.kpiResultRepository = kpiResultRepository;</span>
+<span class="fc" id="L65">        this.clock = clock;</span>
+<span class="fc" id="L66">    }</span>
+
+    /**
+     * Сотрудники, доступные пользователю.
+     *
+     * @param teamOnly только непосредственные подчинённые пользователя; руководитель всегда видит
+     *                 только свою команду, независимо от параметра (SEC-3)
+     */
+    public List&lt;EmployeeRow&gt; visibleEmployees(Long actorUserId, boolean teamOnly) {
+<span class="nc" id="L75">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="nc" id="L76">        accessPolicy.requireRole(actor, RoleCode.MANAGER, RoleCode.HR, RoleCode.FINANCE, RoleCode.ADMIN);</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        List&lt;Employee&gt; employees = teamOnly</span>
+<span class="nc" id="L78">                ? employeeRepository.findWithDepartmentByManagerIdOrderByFullName(actor.getEmployee().getId())</span>
+<span class="nc" id="L79">                : scope(actor);</span>
+<span class="nc" id="L80">        Map&lt;Long, Integer&gt; kpi = kpiCompletion();</span>
+<span class="nc" id="L81">        return employees.stream().map(e -&gt; new EmployeeRow(e, kpi.getOrDefault(e.getId(), 0))).toList();</span>
+    }
+
+    /** Команда руководителя или все сотрудники для HR — с балансами и начислениями месяца. */
+    public List&lt;TeamMemberRow&gt; team(Long actorUserId) {
+<span class="nc" id="L86">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="nc" id="L87">        accessPolicy.requireRole(actor, RoleCode.MANAGER, RoleCode.HR);</span>
+<span class="nc" id="L88">        List&lt;Employee&gt; employees = scope(actor);</span>
+<span class="nc" id="L89">        List&lt;Long&gt; ids = employees.stream().map(Employee::getId).toList();</span>
+<span class="nc" id="L90">        Map&lt;Long, BonusAccount&gt; accounts = accountRepository.findByEmployeeIdIn(ids).stream()</span>
+<span class="nc" id="L91">                .collect(Collectors.toMap(a -&gt; a.getEmployee().getId(), Function.identity()));</span>
+<span class="nc" id="L92">        LocalDate monthStart = YearMonth.now(clock).atDay(1);</span>
+<span class="nc" id="L93">        Map&lt;Long, List&lt;Operation&gt;&gt; monthOps = operationRepository.findAll(</span>
+<span class="nc" id="L94">                        employeeIn(ids).and(createdFrom(BonusPeriods.startOfDay(monthStart, clock.getZone()))),</span>
+<span class="nc" id="L95">                        AccountQueryService.NEWEST_FIRST).stream()</span>
+<span class="nc" id="L96">                .collect(Collectors.groupingBy(o -&gt; o.getAccount().getEmployee().getId()));</span>
+<span class="nc" id="L97">        Map&lt;Long, Integer&gt; kpi = kpiCompletion();</span>
+<span class="nc" id="L98">        return employees.stream()</span>
+<span class="nc" id="L99">                .map(e -&gt; new TeamMemberRow(e, kpi.getOrDefault(e.getId(), 0), accounts.get(e.getId()),</span>
+<span class="nc" id="L100">                        OperationTotals.accrued(monthOps.getOrDefault(e.getId(), List.of()))))</span>
+<span class="nc" id="L101">                .toList();</span>
+    }
+
+    private List&lt;Employee&gt; scope(AppUser actor) {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        return actor.getRoleCode() == RoleCode.MANAGER</span>
+<span class="nc" id="L106">                ? employeeRepository.findWithDepartmentByManagerIdOrderByFullName(actor.getEmployee().getId())</span>
+<span class="nc" id="L107">                : employeeRepository.findAllWithDepartment();</span>
+    }
+
+    /** Среднее выполнение KPI сотрудника за периоды, содержащие сегодняшнюю дату, % (целое). */
+    private Map&lt;Long, Integer&gt; kpiCompletion() {
+<span class="nc" id="L112">        return kpiResultRepository.findCovering(LocalDate.now(clock)).stream()</span>
+<span class="nc" id="L113">                .collect(Collectors.groupingBy(r -&gt; r.getEmployee().getId(),</span>
+<span class="nc" id="L114">                        Collectors.collectingAndThen(Collectors.toList(), EmployeeQueryService::average)));</span>
+    }
+
+    private static int average(List&lt;KpiResult&gt; results) {
+<span class="nc" id="L118">        BigDecimal sum = results.stream().map(KpiResult::getValuePct).reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="nc" id="L119">        return sum.divide(BigDecimal.valueOf(results.size()), 0, RoundingMode.HALF_UP).intValue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">AccrualService.java</span></div><h1>AccrualService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import by.technosoft.bonus.config.BonusProperties;
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationBasis;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.AccrualRuleRepository;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.CampaignRepository;
+import by.technosoft.bonus.repository.EmployeeRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.dto.AccrualPreview;
+import by.technosoft.bonus.service.dto.AccrualPreviewLine;
+import by.technosoft.bonus.service.dto.AccrualRequest;
+import by.technosoft.bonus.service.dto.AccrualResult;
+import by.technosoft.bonus.service.dto.CalculationResult;
+import by.technosoft.bonus.service.dto.OperationView;
+import by.technosoft.bonus.service.event.OperationAction;
+import by.technosoft.bonus.service.event.OperationRegisteredEvent;
+import by.technosoft.bonus.service.exception.AccountBlockedException;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import jakarta.validation.Valid;
+
+/**
+ * Ручное начисление баллов руководителем или HR (UC5) с расчётом суммы (UC6).
+ */
+@Service
+@Validated
+public class AccrualService {
+
+    /** Основания, допустимые для ручного начисления. */
+<span class="fc" id="L53">    private static final Set&lt;OperationBasis&gt; MANUAL_BASES =</span>
+<span class="fc" id="L54">            EnumSet.of(OperationBasis.KPI, OperationBasis.PROJECT, OperationBasis.ACHIEVEMENT);</span>
+
+    private final AccessPolicy accessPolicy;
+    private final EmployeeRepository employeeRepository;
+    private final BonusAccountRepository accountRepository;
+    private final OperationRepository operationRepository;
+    private final AccrualRuleRepository ruleRepository;
+    private final CampaignRepository campaignRepository;
+    private final BonusCalculationService calculationService;
+    private final OperationNumberGenerator numberGenerator;
+    private final ApplicationEventPublisher events;
+    private final BonusProperties properties;
+    private final Clock clock;
+
+    public AccrualService(AccessPolicy accessPolicy,
+                          EmployeeRepository employeeRepository,
+                          BonusAccountRepository accountRepository,
+                          OperationRepository operationRepository,
+                          AccrualRuleRepository ruleRepository,
+                          CampaignRepository campaignRepository,
+                          BonusCalculationService calculationService,
+                          OperationNumberGenerator numberGenerator,
+                          ApplicationEventPublisher events,
+                          BonusProperties properties,
+<span class="fc" id="L78">                          Clock clock) {</span>
+<span class="fc" id="L79">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L80">        this.employeeRepository = employeeRepository;</span>
+<span class="fc" id="L81">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L82">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L83">        this.ruleRepository = ruleRepository;</span>
+<span class="fc" id="L84">        this.campaignRepository = campaignRepository;</span>
+<span class="fc" id="L85">        this.calculationService = calculationService;</span>
+<span class="fc" id="L86">        this.numberGenerator = numberGenerator;</span>
+<span class="fc" id="L87">        this.events = events;</span>
+<span class="fc" id="L88">        this.properties = properties;</span>
+<span class="fc" id="L89">        this.clock = clock;</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * UC5, шаг «Предварительный расчёт» (UC6): сумма × коэффициент кампании по каждому сотруднику
+     * и признак превышения лимита. Ничего не записывает.
+     */
+    @Transactional(readOnly = true)
+    public AccrualPreview preview(Long actorUserId, @Valid AccrualRequest request) {
+<span class="fc" id="L98">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L99">        accessPolicy.requireRole(actor, RoleCode.MANAGER, RoleCode.HR);</span>
+<span class="fc" id="L100">        validate(request);</span>
+<span class="fc" id="L101">        return buildPreview(actor, request, LocalDate.now(clock));</span>
+    }
+
+    /**
+     * UC5 «Ручное начисление»: руководитель — только своей команде, HR — любому сотруднику (SEC-3).
+     * Итог не выше лимита — операция «accrued» и рост баланса; выше лимита — «pending»
+     * на согласование финотдела без изменения баланса. Заблокированный счёт любого получателя
+     * отменяет всё начисление (операция атомарна).
+     */
+    @Transactional
+    public AccrualResult create(Long actorUserId, @Valid AccrualRequest request) {
+<span class="fc" id="L112">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L113">        accessPolicy.requireRole(actor, RoleCode.MANAGER, RoleCode.HR);</span>
+<span class="fc" id="L114">        validate(request);</span>
+<span class="fc" id="L115">        AccrualPreview preview = buildPreview(actor, request, LocalDate.now(clock));</span>
+
+        // Блокируем счета в порядке id сотрудников (строки preview отсортированы) — без взаимных блокировок.
+<span class="fc" id="L118">        List&lt;BonusAccount&gt; accounts = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (AccrualPreviewLine line : preview.lines()) {</span>
+<span class="fc" id="L120">            BonusAccount account = accountRepository.lockByEmployeeId(line.employeeId())</span>
+<span class="pc" id="L121">                    .orElseThrow(() -&gt; new ObjectNotFoundException(</span>
+<span class="nc" id="L122">                            &quot;У сотрудника «&quot; + line.employeeName() + &quot;» нет бонусного счёта&quot;));</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (!account.isActive()) {</span>
+<span class="fc" id="L124">                throw new AccountBlockedException(</span>
+<span class="fc" id="L125">                        &quot;Счёт сотрудника «&quot; + line.employeeName() + &quot;» заблокирован: начисление невозможно&quot;);</span>
+            }
+<span class="fc" id="L127">            accounts.add(account);</span>
+<span class="fc" id="L128">        }</span>
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        AccrualRule rule = request.ruleId() == null ? null : ruleRepository.findById(request.ruleId())</span>
+<span class="pc" id="L131">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Правило &quot; + request.ruleId() + &quot; не найдено&quot;));</span>
+<span class="fc" id="L132">        String reason = request.reason().trim();</span>
+<span class="fc" id="L133">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc" id="L134">        String limitComment = &quot;Превышен лимит &quot; + PointsFormat.format(preview.limit()) + &quot; на сотрудника&quot;;</span>
+
+<span class="fc" id="L136">        List&lt;OperationView&gt; created = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        for (int i = 0; i &lt; preview.lines().size(); i++) {</span>
+<span class="fc" id="L138">            AccrualPreviewLine line = preview.lines().get(i);</span>
+<span class="fc" id="L139">            BonusAccount account = accounts.get(i);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            OperationStatus status = line.needsApproval() ? OperationStatus.PENDING : OperationStatus.ACCRUED;</span>
+<span class="fc" id="L141">            Operation op = Operation.create(numberGenerator.next(), account, OperationType.ACCRUAL, status,</span>
+<span class="fc" id="L142">                            request.basis(), line.total(), reason, actor, now)</span>
+<span class="fc" id="L143">                    .withRule(rule)</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                    .withCampaign(line.campaignId() == null ? null : campaignRepository.getReferenceById(line.campaignId()));</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            if (status == OperationStatus.ACCRUED) {</span>
+<span class="fc" id="L146">                account.applyDelta(line.total(), now);</span>
+            }
+<span class="fc" id="L148">            operationRepository.save(op);</span>
+<span class="fc" id="L149">            events.publishEvent(OperationRegisteredEvent.of(OperationAction.MANUAL_ACCRUAL, op, actor,</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">                    line.needsApproval() ? limitComment : null));</span>
+<span class="fc" id="L151">            created.add(OperationView.of(op));</span>
+        }
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        int pending = (int) created.stream().filter(o -&gt; o.status() == OperationStatus.PENDING).count();</span>
+<span class="fc" id="L154">        return new AccrualResult(created, created.size() - pending, pending);</span>
+    }
+
+    /** Бизнес-проверки запроса сверх аннотаций Bean Validation. */
+    private void validate(AccrualRequest request) {
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (!MANUAL_BASES.contains(request.basis())) {</span>
+<span class="fc" id="L160">            throw new DomainValidationException(&quot;Для ручного начисления выберите основание: KPI, проект или достижение.&quot;);</span>
+        }
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (request.reason().isBlank()) {</span>
+<span class="fc" id="L163">            throw new DomainValidationException(&quot;Укажите сумму больше нуля и причину начисления.&quot;);</span>
+        }
+<span class="fc" id="L165">    }</span>
+
+    /** Расчёт строк: сотрудники без повторов в порядке id, проверка прав на каждого. */
+    private AccrualPreview buildPreview(AppUser actor, AccrualRequest request, LocalDate today) {
+<span class="fc" id="L169">        int limit = properties.accrualLimit();</span>
+<span class="fc" id="L170">        List&lt;AccrualPreviewLine&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        for (Long employeeId : new TreeSet&lt;&gt;(request.employeeIds())) {</span>
+<span class="fc" id="L172">            Employee employee = employeeRepository.findById(employeeId)</span>
+<span class="fc" id="L173">                    .orElseThrow(() -&gt; new DomainValidationException(</span>
+                            &quot;В списке есть неизвестный сотрудник. Вернитесь к шагу 1.&quot;));
+<span class="fc" id="L175">            accessPolicy.requireCanManage(actor, employee);</span>
+<span class="fc" id="L176">            CalculationResult calc = calculationService.calculateManual(</span>
+<span class="fc" id="L177">                    employeeId, request.amount(), request.campaignId(), today);</span>
+<span class="fc" id="L178">            lines.add(new AccrualPreviewLine(employeeId, employee.getFullName(), request.amount(),</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">                    calc.coefficient(), calc.campaignId(), calc.total(), calc.total() &gt; limit));</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        int total = lines.stream().mapToInt(AccrualPreviewLine::total).sum();</span>
+<span class="fc" id="L182">        int approvalCount = (int) lines.stream().filter(AccrualPreviewLine::needsApproval).count();</span>
+<span class="fc" id="L183">        return new AccrualPreview(List.copyOf(lines), total, limit, approvalCount);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

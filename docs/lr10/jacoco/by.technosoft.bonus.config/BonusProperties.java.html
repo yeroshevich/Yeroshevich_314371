@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BonusProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.config</a> &gt; <span class="el_source">BonusProperties.java</span></div><h1>BonusProperties.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.config;
+
+import java.time.Duration;
+import java.time.ZoneId;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+
+/**
+ * Настраиваемые параметры бизнес-логики (префикс {@code bonus} в application.yml).
+ *
+ * @param accrualLimit   лимит разового ручного начисления на сотрудника, баллы (UC5)
+ * @param eventBatchSize сколько необработанных событий брать за один проход (UC4)
+ * @param zone           часовой пояс, в котором считаются бизнес-даты
+ * @param eventScheduler периодическая обработка событий
+ */
+@ConfigurationProperties(prefix = &quot;bonus&quot;)
+<span class="fc" id="L18">public record BonusProperties(</span>
+        @DefaultValue(&quot;1000&quot;) int accrualLimit,
+        @DefaultValue(&quot;100&quot;) int eventBatchSize,
+        @DefaultValue(&quot;Europe/Minsk&quot;) ZoneId zone,
+        @DefaultValue EventScheduler eventScheduler) {
+
+    /**
+     * @param enabled включён ли планировщик
+     * @param delay   пауза между проходами
+     */
+<span class="fc" id="L28">    public record EventScheduler(@DefaultValue(&quot;false&quot;) boolean enabled, @DefaultValue(&quot;PT1M&quot;) Duration delay) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.config</a> &gt; <span class="el_source">SecurityProperties.java</span></div><h1>SecurityProperties.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.config;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+
+/**
+ * Параметры безопасности (префикс {@code bonus.security} в application.yml).
+ *
+ * @param jwt             подпись и срок действия токенов доступа (SEC-1)
+ * @param secretKey       ключ AES-256 (base64) для шифрования API-ключей интеграций (DATA-4)
+ * @param initialPassword временный пароль новой учётной записи (UC12)
+ * @param corsOrigins     адреса клиентской части, которым разрешены запросы из браузера
+ */
+@ConfigurationProperties(prefix = &quot;bonus.security&quot;)
+<span class="fc" id="L18">public record SecurityProperties(</span>
+        Jwt jwt,
+        String secretKey,
+        @DefaultValue(&quot;demo&quot;) String initialPassword,
+        @DefaultValue(&quot;http://localhost:5173&quot;) List&lt;String&gt; corsOrigins) {
+
+    /**
+     * @param secret секрет HS256, не короче 32 байт
+     * @param ttl    срок действия токена
+     * @param issuer издатель (claim iss)
+     */
+<span class="fc" id="L29">    public record Jwt(String secret, @DefaultValue(&quot;PT8H&quot;) Duration ttl, @DefaultValue(&quot;technosoft-bonus&quot;) String issuer) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

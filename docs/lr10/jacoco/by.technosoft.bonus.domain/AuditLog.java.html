@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditLog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">AuditLog.java</span></div><h1>AuditLog.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.net.InetAddress;
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** Запись журнала аудита (таблица audit_log, NFR-3, SEC-4, DATA-3). */
+@Entity
+@Table(name = &quot;audit_log&quot;)
+public class AuditLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;occurred_at&quot;, nullable = false)
+    private OffsetDateTime occurredAt;
+
+    /** Пользователь; {@code null} — действие системы. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;user_id&quot;)
+    private AppUser user;
+
+    @Column(name = &quot;action&quot;, nullable = false, length = 100)
+    private String action;
+
+    @Column(name = &quot;object_type&quot;, nullable = false, length = 50)
+    private String objectType;
+
+    @Column(name = &quot;object_id&quot;)
+    private Long objectId;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;details&quot;, nullable = false, columnDefinition = &quot;jsonb&quot;)
+    private String details;
+
+    @JdbcTypeCode(SqlTypes.INET)
+    @Column(name = &quot;ip&quot;, columnDefinition = &quot;inet&quot;)
+    private InetAddress ip;
+
+<span class="fc" id="L53">    protected AuditLog() {</span>
+<span class="fc" id="L54">    }</span>
+
+    public AuditLog(OffsetDateTime occurredAt, AppUser user, String action, String objectType, Long objectId,
+<span class="fc" id="L57">                    String details, InetAddress ip) {</span>
+<span class="fc" id="L58">        this.occurredAt = occurredAt;</span>
+<span class="fc" id="L59">        this.user = user;</span>
+<span class="fc" id="L60">        this.action = action;</span>
+<span class="fc" id="L61">        this.objectType = objectType;</span>
+<span class="fc" id="L62">        this.objectId = objectId;</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        this.details = details == null ? &quot;{}&quot; : details;</span>
+<span class="fc" id="L64">        this.ip = ip;</span>
+<span class="fc" id="L65">    }</span>
+
+    public Long getId() {
+<span class="fc" id="L68">        return id;</span>
+    }
+
+    public OffsetDateTime getOccurredAt() {
+<span class="fc" id="L72">        return occurredAt;</span>
+    }
+
+    public AppUser getUser() {
+<span class="fc" id="L76">        return user;</span>
+    }
+
+    public String getAction() {
+<span class="fc" id="L80">        return action;</span>
+    }
+
+    public String getObjectType() {
+<span class="fc" id="L84">        return objectType;</span>
+    }
+
+    public Long getObjectId() {
+<span class="fc" id="L88">        return objectId;</span>
+    }
+
+    public String getDetails() {
+<span class="fc" id="L92">        return details;</span>
+    }
+
+    public InetAddress getIp() {
+<span class="fc" id="L96">        return ip;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

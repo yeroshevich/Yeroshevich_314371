@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProgramController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.controller</a> &gt; <span class="el_source">ProgramController.java</span></div><h1>ProgramController.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import by.technosoft.bonus.service.RedemptionService;
+import by.technosoft.bonus.service.dto.RedemptionResult;
+import by.technosoft.bonus.service.query.AccountQueryService;
+import by.technosoft.bonus.service.query.DirectoryQueryService;
+import by.technosoft.bonus.service.query.OperationQueryService;
+import by.technosoft.bonus.web.dto.ProgramDto;
+import by.technosoft.bonus.web.dto.RedemptionDto;
+import by.technosoft.bonus.web.mapper.AccountMapper;
+import by.technosoft.bonus.web.mapper.DirectoryMapper;
+import by.technosoft.bonus.web.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+/** Программы мотивации и списание баллов (UC3). */
+@RestController
+@RequestMapping(ApiPaths.V1 + &quot;/programs&quot;)
+@PreAuthorize(Roles.ACCOUNT_HOLDER)
+@Tag(name = &quot;Программы мотивации&quot;, description = &quot;UC3 «Использование бонусов»&quot;)
+public class ProgramController {
+
+    private final DirectoryQueryService directoryQueryService;
+    private final RedemptionService redemptionService;
+    private final OperationQueryService operationQueryService;
+    private final AccountQueryService accountQueryService;
+    private final DirectoryMapper directoryMapper;
+    private final AccountMapper accountMapper;
+
+    public ProgramController(DirectoryQueryService directoryQueryService,
+                             RedemptionService redemptionService,
+                             OperationQueryService operationQueryService,
+                             AccountQueryService accountQueryService,
+                             DirectoryMapper directoryMapper,
+<span class="fc" id="L47">                             AccountMapper accountMapper) {</span>
+<span class="fc" id="L48">        this.directoryQueryService = directoryQueryService;</span>
+<span class="fc" id="L49">        this.redemptionService = redemptionService;</span>
+<span class="fc" id="L50">        this.operationQueryService = operationQueryService;</span>
+<span class="fc" id="L51">        this.accountQueryService = accountQueryService;</span>
+<span class="fc" id="L52">        this.directoryMapper = directoryMapper;</span>
+<span class="fc" id="L53">        this.accountMapper = accountMapper;</span>
+<span class="fc" id="L54">    }</span>
+
+    @GetMapping
+    @Operation(summary = &quot;Каталог программ&quot;, description = &quot;Активные и недоступные программы (с пояснением).&quot;)
+    public List&lt;ProgramDto&gt; list() {
+<span class="nc" id="L59">        return directoryQueryService.programs().stream().map(directoryMapper::toDto).toList();</span>
+    }
+
+    @PostMapping(&quot;/{id}/redemptions&quot;)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = &quot;Списать баллы на программу&quot;, description = &quot;Баланс ≥ стоимости и программа активна. &quot;
+            + &quot;409 INSUFFICIENT_FUNDS / PROGRAM_INACTIVE, 423 ACCOUNT_BLOCKED, 404 NOT_FOUND.&quot;)
+    public RedemptionDto redeem(@AuthenticationPrincipal AuthenticatedUser me, @PathVariable Long id) {
+<span class="fc" id="L67">        RedemptionResult result = redemptionService.redeem(me.employeeId(), id);</span>
+<span class="fc" id="L68">        return accountMapper.toDto(operationQueryService.get(result.operation().id()),</span>
+<span class="fc" id="L69">                accountQueryService.state(me.employeeId()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">IntegrationQueryService.java</span></div><h1>IntegrationQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.Integration;
+import by.technosoft.bonus.domain.IntegrationCheck;
+import by.technosoft.bonus.repository.IntegrationCheckRepository;
+import by.technosoft.bonus.repository.IntegrationRepository;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+
+/** Чтение подключений к внешним системам (UC13) с результатом последней проверки соединения. */
+@Service
+@Transactional(readOnly = true)
+public class IntegrationQueryService {
+
+    /** Интеграция и последняя проверка соединения ({@code null} — не проверялась). */
+<span class="fc" id="L21">    public record IntegrationState(Integration integration, IntegrationCheck lastCheck) {</span>
+    }
+
+    private final IntegrationRepository integrationRepository;
+    private final IntegrationCheckRepository checkRepository;
+
+    public IntegrationQueryService(IntegrationRepository integrationRepository,
+<span class="fc" id="L28">                                   IntegrationCheckRepository checkRepository) {</span>
+<span class="fc" id="L29">        this.integrationRepository = integrationRepository;</span>
+<span class="fc" id="L30">        this.checkRepository = checkRepository;</span>
+<span class="fc" id="L31">    }</span>
+
+    public List&lt;IntegrationState&gt; list() {
+<span class="nc" id="L34">        return integrationRepository.findAll(Sort.by(&quot;id&quot;)).stream().map(this::state).toList();</span>
+    }
+
+    public IntegrationState get(Long id) {
+<span class="fc" id="L38">        return integrationRepository.findById(id).map(this::state)</span>
+<span class="pc" id="L39">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Интеграция не найдена.&quot;));</span>
+    }
+
+    private IntegrationState state(Integration integration) {
+<span class="fc" id="L43">        return new IntegrationState(integration,</span>
+<span class="fc" id="L44">                checkRepository.findFirstByIntegrationIdOrderByCheckedAtDescIdDesc(integration.getId()).orElse(null));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

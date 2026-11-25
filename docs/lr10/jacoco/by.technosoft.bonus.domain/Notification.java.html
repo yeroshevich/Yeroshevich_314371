@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Notification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">Notification.java</span></div><h1>Notification.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.time.OffsetDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** Уведомление пользователя (таблица notification). */
+@Entity
+@Table(name = &quot;notification&quot;)
+public class Notification {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;user_id&quot;, nullable = false)
+    private AppUser user;
+
+    @Column(name = &quot;title&quot;, nullable = false, length = 150)
+    private String title;
+
+    @Column(name = &quot;text&quot;, nullable = false, length = 500)
+    private String text;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = &quot;read_at&quot;)
+    private OffsetDateTime readAt;
+
+<span class="fc" id="L40">    protected Notification() {</span>
+<span class="fc" id="L41">    }</span>
+
+<span class="fc" id="L43">    public Notification(AppUser user, String title, String text, OffsetDateTime createdAt) {</span>
+<span class="fc" id="L44">        this.user = user;</span>
+<span class="fc" id="L45">        this.title = title;</span>
+<span class="fc" id="L46">        this.text = text;</span>
+<span class="fc" id="L47">        this.createdAt = createdAt;</span>
+<span class="fc" id="L48">    }</span>
+
+    public Long getId() {
+<span class="nc" id="L51">        return id;</span>
+    }
+
+    public AppUser getUser() {
+<span class="fc" id="L55">        return user;</span>
+    }
+
+    public String getTitle() {
+<span class="fc" id="L59">        return title;</span>
+    }
+
+    public String getText() {
+<span class="fc" id="L63">        return text;</span>
+    }
+
+    public OffsetDateTime getCreatedAt() {
+<span class="nc" id="L67">        return createdAt;</span>
+    }
+
+    public OffsetDateTime getReadAt() {
+<span class="nc" id="L71">        return readAt;</span>
+    }
+
+    public boolean isRead() {
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        return readAt != null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

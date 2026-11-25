@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">OperationMapper.java</span></div><h1>OperationMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import static by.technosoft.bonus.web.mapper.ApiValues.code;
+import static by.technosoft.bonus.web.mapper.ApiValues.id;
+
+import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.service.dto.CorrectionAction;
+import by.technosoft.bonus.service.dto.CorrectionRequest;
+import by.technosoft.bonus.service.query.OperationQueryService.OperationEntry;
+import by.technosoft.bonus.service.query.OperationQueryService.OperationFilter;
+import by.technosoft.bonus.web.dto.CorrectionRequestDto;
+import by.technosoft.bonus.web.dto.OperationDto;
+
+/**
+ * Операция ↔ JSON. Единственное место, где собирается {@link OperationDto}: им пользуются
+ * счёт сотрудника, журнал, контроль финотдела, начисления и списания (DRY).
+ */
+@Component
+<span class="fc" id="L29">public class OperationMapper {</span>
+
+    /** Автор автоначисления (created_by = NULL). */
+    static final String SYSTEM_AUTHOR = &quot;Система&quot;;
+
+    public OperationDto toDto(OperationEntry entry) {
+<span class="fc" id="L35">        Operation op = entry.operation();</span>
+<span class="fc" id="L36">        Employee employee = op.getAccount().getEmployee();</span>
+<span class="fc" id="L37">        return new OperationDto(</span>
+<span class="fc" id="L38">                id(op.getId()),</span>
+<span class="fc" id="L39">                op.getNumber(),</span>
+<span class="fc" id="L40">                id(employee.getId()),</span>
+<span class="fc" id="L41">                employee.getFullName(),</span>
+<span class="fc" id="L42">                id(employee.getDepartment().getId()),</span>
+<span class="fc" id="L43">                code(op.getType()),</span>
+<span class="fc" id="L44">                op.getAmount(),</span>
+<span class="fc" id="L45">                op.getOriginalAmount(),</span>
+<span class="fc" id="L46">                code(op.getStatus()),</span>
+<span class="fc" id="L47">                code(op.getBasis()),</span>
+<span class="fc" id="L48">                op.getReason(),</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                op.getRule() == null ? null : id(op.getRule().getId()),</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                op.getCampaign() == null ? null : id(op.getCampaign().getId()),</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">                op.getProgram() == null ? null : id(op.getProgram().getId()),</span>
+<span class="fc" id="L52">                op.getCreatedAt(),</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                op.getCreatedBy() == null ? SYSTEM_AUTHOR : op.getCreatedBy().getEmployee().getFullName(),</span>
+<span class="fc" id="L54">                entry.comment(),</span>
+<span class="fc" id="L55">                entry.disputed());</span>
+    }
+
+    public List&lt;OperationDto&gt; toDtos(List&lt;OperationEntry&gt; entries) {
+<span class="fc" id="L59">        return entries.stream().map(this::toDto).toList();</span>
+    }
+
+    public CorrectionRequest toCommand(CorrectionRequestDto dto) {
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        CorrectionAction action = &quot;cancel&quot;.equals(dto.action()) ? CorrectionAction.CANCEL : CorrectionAction.ADJUST;</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        return new CorrectionRequest(action, action == CorrectionAction.CANCEL ? null : dto.newAmount(), dto.reason());</span>
+    }
+
+    /** Фильтр журнала из параметров запроса. */
+    public OperationFilter toFilter(Long employeeId, Long departmentId, String type, List&lt;String&gt; statuses,
+                                    LocalDate from, LocalDate to, String query) {
+<span class="pc bpc" id="L70" title="3 of 4 branches missed.">        Set&lt;OperationStatus&gt; statusSet = statuses == null || statuses.isEmpty() ? null</span>
+<span class="pc" id="L71">                : EnumSet.copyOf(statuses.stream().map(s -&gt; ApiValues.parse(OperationStatus.class, s)).toList());</span>
+<span class="fc" id="L72">        return new OperationFilter(employeeId, departmentId, ApiValues.parse(OperationType.class, type), statusSet,</span>
+                from, to, query);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Интеграции — макет TechnoSoft Bonus</title>
+<link rel="stylesheet" href="wf.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sider">
+    <div class="logo"><i class="x" style="width:28px;height:28px"></i>TechnoSoft Bonus</div>
+    <nav class="menu"><div class="mi"><i class="ico"></i>Пользователи</div><div class="mi on"><i class="ico"></i>Интеграции</div><div class="mi"><i class="ico"></i>Журнал аудита</div></nav>
+    <div class="sfoot"><span class="lbl">Роль: Администратор</span><span class="fx"><i class="ico"></i>Выйти</span></div>
+  </aside>
+  <header class="hdr">
+    <span class="crumb">Администрирование / <b>Интеграции</b></span>
+    <span class="sp"></span>
+    <span class="bell" title="Уведомления"><i></i><b>3</b></span>
+    <span class="prof"><i class="ava"></i><span>Сидоров П. Н.<small>Администратор</small></span><span class="mut">▾</span></span>
+  </header>
+  <main class="main">
+<div class="ph"><h1>Интеграции</h1><span class="sp"></span><span class="mut">Обмен данными по HTTPS, формат JSON</span></div>
+<div class="row"><div class="box fxc c6" style="height:354px;gap:12px"><div class="fx"><i class="x" style="width:44px;height:44px;border-radius:6px"></i><div><h2>HRIS</h2><span class="mut">Кадровые данные: сотрудники, отделы, должности</span></div><span class="sp"></span><span class="fx" style="gap:8px"><i class="sw on"></i>Включено</span></div><div class="fx"><span class="tag ">Подключено</span><span class="lbl">Синхронизация: сегодня в 09:15</span></div><div class="fx" style="gap:16px;align-items:flex-start"><div class="field" style="flex:1.3"><label>URL API</label><div class="inp"><span class="v">https://hris.technosoft.local/api/v1</span></div></div><div class="field" style="flex:1"><label>API-ключ</label><div class="inp"><span class="v">••••••••••••3f9a</span></div></div></div><div class="field" style="width:50%"><label>Расписание синхронизации</label><div class="inp sel"><span class="v">Каждые 15 минут</span></div></div><div class="fx" style="margin-top:auto"><span class="btn">Проверить соединение</span><span class="btn p">Сохранить</span></div></div><div class="box fxc c6" style="height:354px;gap:12px"><div class="fx"><i class="x" style="width:44px;height:44px;border-radius:6px"></i><div><h2>ERP</h2><span class="mut">Бизнес-события: закрытые задачи и проекты</span></div><span class="sp"></span><span class="fx" style="gap:8px"><i class="sw on"></i>Включено</span></div><div class="fx"><span class="tag dk">Ошибка соединения</span><span class="lbl">Последняя попытка: сегодня в 10:02</span></div><div class="fx" style="gap:16px;align-items:flex-start"><div class="field" style="flex:1.3"><label>URL API</label><div class="inp"><span class="v">https://erp.technosoft.local/rest</span></div></div><div class="field" style="flex:1"><label>API-ключ</label><div class="inp"><span class="v">••••••••••••a71c</span></div></div></div><div class="field" style="width:50%"><label>Расписание синхронизации</label><div class="inp sel"><span class="v">Каждые 5 минут</span></div></div><div class="alert" style="padding:6px 10px"><i class="ico"></i><span>Сервер не ответил за 10 с. Проверьте URL и доступность сервера ERP.</span></div><div class="fx" style="margin-top:auto"><span class="btn">Проверить соединение</span><span class="btn p">Сохранить</span></div></div><div class="box fxc c6" style="height:354px;gap:12px"><div class="fx"><i class="x" style="width:44px;height:44px;border-radius:6px"></i><div><h2>Active Directory</h2><span class="mut">Вход по корпоративной учётной записи</span></div><span class="sp"></span><span class="fx" style="gap:8px"><i class="sw on"></i>Включено</span></div><div class="fx"><span class="tag ">Подключено</span><span class="lbl">Проверено: 24.11.2026</span></div><div class="fx" style="gap:16px;align-items:flex-start"><div class="field" style="flex:1.3"><label>Адрес LDAP</label><div class="inp"><span class="v">ldaps://ad.technosoft.local:636</span></div></div><div class="field" style="flex:1"><label>Сервисная учётная запись</label><div class="inp"><span class="v">svc-bonus@technosoft.local</span></div></div></div><div class="field" style="width:50%"><label>Группа пользователей</label><div class="inp"><span class="v">TS-Bonus-Users</span></div></div><div class="fx" style="margin-top:auto"><span class="btn">Проверить соединение</span><span class="btn p">Сохранить</span></div></div><div class="box fxc c6" style="height:354px;gap:12px"><div class="fx"><i class="x" style="width:44px;height:44px;border-radius:6px"></i><div><h2>Сервис уведомлений</h2><span class="mut">Email и push о начислениях и списаниях</span></div><span class="sp"></span><span class="fx" style="gap:8px"><i class="sw"></i>Выключено</span></div><div class="fx"><span class="tag ds">Не настроено</span><span class="lbl">Ещё не проверялось</span></div><div class="fx" style="gap:16px;align-items:flex-start"><div class="field" style="flex:1.3"><label>URL сервиса</label><div class="inp"><span class="v">https://notify.technosoft.local</span></div></div><div class="field" style="flex:1"><label>API-ключ</label><div class="inp ph-t"><span class="v">Не задан</span></div></div></div><div class="field" style="width:50%"><label>Каналы</label><div class="inp sel"><span class="v">Email и push</span></div></div><div class="fx" style="margin-top:auto"><span class="btn">Проверить соединение</span><span class="btn p">Сохранить</span></div></div></div>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationReview.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">OperationReview.java</span></div><h1>OperationReview.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.time.OffsetDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** Решение финансового отдела по операции (таблица operation_review). */
+@Entity
+@Table(name = &quot;operation_review&quot;)
+public class OperationReview {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;operation_id&quot;, nullable = false)
+    private Operation operation;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;reviewer_id&quot;, nullable = false)
+    private AppUser reviewer;
+
+    @Column(name = &quot;decision&quot;, nullable = false, length = 10)
+    private ReviewDecision decision;
+
+    @Column(name = &quot;comment&quot;, length = 300)
+    private String comment;
+
+    @Column(name = &quot;decided_at&quot;, nullable = false)
+    private OffsetDateTime decidedAt;
+
+<span class="fc" id="L41">    protected OperationReview() {</span>
+<span class="fc" id="L42">    }</span>
+
+    public OperationReview(Operation operation, AppUser reviewer, ReviewDecision decision, String comment,
+<span class="fc" id="L45">                           OffsetDateTime decidedAt) {</span>
+<span class="fc" id="L46">        this.operation = operation;</span>
+<span class="fc" id="L47">        this.reviewer = reviewer;</span>
+<span class="fc" id="L48">        this.decision = decision;</span>
+<span class="fc" id="L49">        this.comment = comment;</span>
+<span class="fc" id="L50">        this.decidedAt = decidedAt;</span>
+<span class="fc" id="L51">    }</span>
+
+    public Long getId() {
+<span class="nc" id="L54">        return id;</span>
+    }
+
+    public Operation getOperation() {
+<span class="fc" id="L58">        return operation;</span>
+    }
+
+    public AppUser getReviewer() {
+<span class="fc" id="L62">        return reviewer;</span>
+    }
+
+    public ReviewDecision getDecision() {
+<span class="fc" id="L66">        return decision;</span>
+    }
+
+    public String getComment() {
+<span class="fc" id="L70">        return comment;</span>
+    }
+
+    public OffsetDateTime getDecidedAt() {
+<span class="nc" id="L74">        return decidedAt;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

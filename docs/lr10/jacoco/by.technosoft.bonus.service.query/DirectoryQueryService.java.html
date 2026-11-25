@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">DirectoryQueryService.java</span></div><h1>DirectoryQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.Department;
+import by.technosoft.bonus.domain.Program;
+import by.technosoft.bonus.repository.DepartmentRepository;
+import by.technosoft.bonus.repository.ProgramRepository;
+
+/** Справочники без области видимости: подразделения и каталог программ мотивации (UC3). */
+@Service
+@Transactional(readOnly = true)
+public class DirectoryQueryService {
+
+<span class="fc" id="L19">    private static final Sort BY_ID = Sort.by(&quot;id&quot;);</span>
+
+    private final DepartmentRepository departmentRepository;
+    private final ProgramRepository programRepository;
+
+<span class="fc" id="L24">    public DirectoryQueryService(DepartmentRepository departmentRepository, ProgramRepository programRepository) {</span>
+<span class="fc" id="L25">        this.departmentRepository = departmentRepository;</span>
+<span class="fc" id="L26">        this.programRepository = programRepository;</span>
+<span class="fc" id="L27">    }</span>
+
+    public List&lt;Department&gt; departments() {
+<span class="nc" id="L30">        return departmentRepository.findAll(BY_ID);</span>
+    }
+
+    /** Каталог программ: активные и недоступные (с пояснением). */
+    public List&lt;Program&gt; programs() {
+<span class="nc" id="L35">        return programRepository.findAll(BY_ID);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

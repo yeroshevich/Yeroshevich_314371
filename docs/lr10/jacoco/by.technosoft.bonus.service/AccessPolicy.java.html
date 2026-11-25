@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccessPolicy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">AccessPolicy.java</span></div><h1>AccessPolicy.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.util.Arrays;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.AppUserRepository;
+import by.technosoft.bonus.service.exception.AccessDeniedDomainException;
+
+/**
+ * Проверки ролевой модели (SEC-3) на уровне бизнес-логики:
+ * кто выполняет действие и над чьими данными. REST-слой передаёт id пользователя из сессии.
+ */
+@Component
+public class AccessPolicy {
+
+    private final AppUserRepository userRepository;
+
+<span class="fc" id="L22">    public AccessPolicy(AppUserRepository userRepository) {</span>
+<span class="fc" id="L23">        this.userRepository = userRepository;</span>
+<span class="fc" id="L24">    }</span>
+
+    /** Загружает пользователя-инициатора; неизвестная или заблокированная учётная запись — отказ. */
+    public AppUser requireActiveUser(Long userId) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L29">            throw new AccessDeniedDomainException(&quot;Сессия закончилась. Войдите снова.&quot;);</span>
+        }
+<span class="fc" id="L31">        AppUser user = userRepository.findWithRoleById(userId)</span>
+<span class="fc" id="L32">                .orElseThrow(() -&gt; new AccessDeniedDomainException(&quot;Сессия закончилась. Войдите снова.&quot;));</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (!user.isActive()) {</span>
+<span class="fc" id="L34">            throw new AccessDeniedDomainException(&quot;Учётная запись заблокирована. Обратитесь к администратору системы.&quot;);</span>
+        }
+<span class="fc" id="L36">        return user;</span>
+    }
+
+    /** Роль пользователя входит в {@code allowed}. */
+    public void requireRole(AppUser user, RoleCode... allowed) {
+<span class="fc" id="L41">        RoleCode role = user.getRoleCode();</span>
+<span class="fc bfc" id="L42" title="All 4 branches covered.">        if (Arrays.stream(allowed).noneMatch(r -&gt; r == role)) {</span>
+<span class="fc" id="L43">            throw new AccessDeniedDomainException(&quot;Для этого действия у вашей роли нет прав.&quot;);</span>
+        }
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Может ли пользователь управлять баллами сотрудника: HR — любого,
+     * руководитель — только своей команды (непосредственные подчинённые).
+     */
+    public void requireCanManage(AppUser actor, Employee employee) {
+<span class="fc" id="L52">        RoleCode role = actor.getRoleCode();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (role == RoleCode.HR) {</span>
+<span class="fc" id="L54">            return;</span>
+        }
+<span class="fc bfc" id="L56" title="All 4 branches covered.">        if (role == RoleCode.MANAGER &amp;&amp; employee.isManagedBy(actor.getEmployee().getId())) {</span>
+<span class="fc" id="L57">            return;</span>
+        }
+<span class="fc" id="L59">        throw new AccessDeniedDomainException(&quot;Руководитель может управлять баллами только своей команды.&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventProcessingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">EventProcessingService.java</span></div><h1>EventProcessingService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import by.technosoft.bonus.config.BonusProperties;
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.BusinessEvent;
+import by.technosoft.bonus.domain.EventStatus;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationBasis;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.repository.AccrualRuleRepository;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.BusinessEventRepository;
+import by.technosoft.bonus.repository.CampaignRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.dto.BatchProcessingResult;
+import by.technosoft.bonus.service.dto.CalculationRequest;
+import by.technosoft.bonus.service.dto.CalculationResult;
+import by.technosoft.bonus.service.dto.EventOutcome;
+import by.technosoft.bonus.service.dto.EventProcessingResult;
+import by.technosoft.bonus.service.event.EventProcessingFailedEvent;
+import by.technosoft.bonus.service.event.OperationAction;
+import by.technosoft.bonus.service.event.OperationRegisteredEvent;
+import by.technosoft.bonus.service.exception.AccountBlockedException;
+import by.technosoft.bonus.service.exception.BonusDomainException;
+import by.technosoft.bonus.service.exception.InvalidCalculationInputException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+
+/**
+ * Автоматическое начисление по бизнес-событиям (UC4, BR-2): событие из очереди
+ * business_event → правило по показателю → расчёт (UC6) → операция «accrued» на счёт.
+ */
+@Service
+public class EventProcessingService {
+
+<span class="fc" id="L57">    private static final Logger log = LoggerFactory.getLogger(EventProcessingService.class);</span>
+
+    /** Событие закрытия KPI: код показателя и значение приходят в payload. */
+    static final String KPI_CLOSED = &quot;kpi_closed&quot;;
+
+    /** Прочие типы событий и показатель, к правилу которого они относятся. */
+<span class="fc" id="L63">    static final Map&lt;String, String&gt; EVENT_TYPE_KPI = Map.of(</span>
+            &quot;anniversary&quot;, &quot;TENURE&quot;,
+            &quot;stage_accepted&quot;, &quot;STAGE&quot;,
+            &quot;certificate_obtained&quot;, &quot;CERT&quot;);
+
+    private final BusinessEventRepository eventRepository;
+    private final OperationRepository operationRepository;
+    private final AccrualRuleRepository ruleRepository;
+    private final BonusAccountRepository accountRepository;
+    private final CampaignRepository campaignRepository;
+    private final BonusCalculationService calculationService;
+    private final OperationNumberGenerator numberGenerator;
+    private final ApplicationEventPublisher events;
+    private final ObjectMapper objectMapper;
+    private final TransactionTemplate transactionTemplate;
+    private final BonusProperties properties;
+    private final Clock clock;
+
+    public EventProcessingService(BusinessEventRepository eventRepository,
+                                  OperationRepository operationRepository,
+                                  AccrualRuleRepository ruleRepository,
+                                  BonusAccountRepository accountRepository,
+                                  CampaignRepository campaignRepository,
+                                  BonusCalculationService calculationService,
+                                  OperationNumberGenerator numberGenerator,
+                                  ApplicationEventPublisher events,
+                                  ObjectMapper objectMapper,
+                                  PlatformTransactionManager transactionManager,
+                                  BonusProperties properties,
+<span class="fc" id="L92">                                  Clock clock) {</span>
+<span class="fc" id="L93">        this.eventRepository = eventRepository;</span>
+<span class="fc" id="L94">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L95">        this.ruleRepository = ruleRepository;</span>
+<span class="fc" id="L96">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L97">        this.campaignRepository = campaignRepository;</span>
+<span class="fc" id="L98">        this.calculationService = calculationService;</span>
+<span class="fc" id="L99">        this.numberGenerator = numberGenerator;</span>
+<span class="fc" id="L100">        this.events = events;</span>
+<span class="fc" id="L101">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L102">        this.transactionTemplate = new TransactionTemplate(transactionManager);</span>
+<span class="fc" id="L103">        this.properties = properties;</span>
+<span class="fc" id="L104">        this.clock = clock;</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * UC4 «Автоначисление» по одному событию. Идемпотентно (NFR-4): событие блокируется,
+     * и если оно уже обработано или по нему есть операция, ничего не делается.
+     * Ошибка входных данных или заблокированный счёт → событие «failed» с error_message
+     * (отложено, альт. поток UC4), начисление не создаётся. KPI ниже порога → «processed» без начисления (BR-5).
+     */
+    @Transactional
+    public EventProcessingResult process(Long eventId) {
+<span class="fc" id="L115">        BusinessEvent event = eventRepository.lockById(eventId)</span>
+<span class="fc" id="L116">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Событие &quot; + eventId + &quot; не найдено&quot;));</span>
+<span class="fc bfc" id="L117" title="All 4 branches covered.">        if (event.getStatus() == EventStatus.PROCESSED || operationRepository.existsByEventId(eventId)) {</span>
+<span class="fc" id="L118">            return new EventProcessingResult(eventId, EventOutcome.SKIPPED, null, &quot;Событие уже обработано&quot;);</span>
+        }
+
+<span class="fc" id="L121">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+        try {
+<span class="fc" id="L123">            Long employeeId = event.getEmployee().getId();</span>
+<span class="fc" id="L124">            EventSignal signal = parse(event);</span>
+<span class="fc" id="L125">            LocalDate businessDate = event.getReceivedAt().atZoneSameInstant(properties.zone()).toLocalDate();</span>
+<span class="fc" id="L126">            AccrualRule rule = ruleRepository.findApplicableByKpiCode(signal.kpiCode(), businessDate).stream()</span>
+<span class="fc" id="L127">                    .findFirst()</span>
+<span class="fc" id="L128">                    .orElseThrow(() -&gt; new InvalidCalculationInputException(</span>
+<span class="fc" id="L129">                            &quot;Нет действующего правила для показателя &quot; + signal.kpiCode()));</span>
+<span class="fc" id="L130">            CalculationResult calc = calculationService.calculate(</span>
+<span class="fc" id="L131">                    new CalculationRequest(employeeId, rule.getId(), signal.value(), businessDate));</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">            if (calc.isZero()) {</span>
+<span class="fc" id="L133">                event.markProcessed(now);</span>
+<span class="fc" id="L134">                return new EventProcessingResult(eventId, EventOutcome.NO_BONUS, null, calc.formula());</span>
+            }
+
+<span class="fc" id="L137">            BonusAccount account = accountRepository.lockByEmployeeId(employeeId)</span>
+<span class="pc" id="L138">                    .orElseThrow(() -&gt; new InvalidCalculationInputException(&quot;У сотрудника нет бонусного счёта&quot;));</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">            if (!account.isActive()) {</span>
+<span class="fc" id="L140">                throw new AccountBlockedException(&quot;Счёт сотрудника заблокирован: начисление отложено&quot;);</span>
+            }
+<span class="fc" id="L142">            Operation op = Operation.create(numberGenerator.next(), account, OperationType.ACCRUAL,</span>
+<span class="fc" id="L143">                            OperationStatus.ACCRUED, OperationBasis.KPI, calc.total(), reason(rule, signal), null, now)</span>
+<span class="fc" id="L144">                    .withRule(rule)</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                    .withCampaign(calc.campaignId() == null ? null : campaignRepository.getReferenceById(calc.campaignId()))</span>
+<span class="fc" id="L146">                    .withEvent(event);</span>
+<span class="fc" id="L147">            account.applyDelta(calc.total(), now);</span>
+<span class="fc" id="L148">            operationRepository.save(op);</span>
+<span class="fc" id="L149">            event.markProcessed(now);</span>
+<span class="fc" id="L150">            events.publishEvent(OperationRegisteredEvent.of(OperationAction.AUTO_ACCRUAL, op, null, calc.formula()));</span>
+<span class="fc" id="L151">            return new EventProcessingResult(eventId, EventOutcome.ACCRUED, op.getId(), calc.formula());</span>
+<span class="fc" id="L152">        } catch (BonusDomainException ex) {</span>
+<span class="fc" id="L153">            event.markFailed(ex.getMessage());</span>
+<span class="fc" id="L154">            events.publishEvent(new EventProcessingFailedEvent(eventId, event.getEventType(),</span>
+<span class="fc" id="L155">                    event.getEmployee().getId(), ex.getMessage()));</span>
+<span class="fc" id="L156">            log.warn(&quot;Событие {} отложено: {}&quot;, eventId, ex.getMessage());</span>
+<span class="fc" id="L157">            return new EventProcessingResult(eventId, EventOutcome.FAILED, null, ex.getMessage());</span>
+        }
+    }
+
+    /**
+     * UC4, пакетный режим: обрабатывает необработанные события («new») в порядке поступления.
+     * Каждое событие — в своей транзакции, поэтому сбой одного не отменяет остальные;
+     * непредвиденная ошибка фиксируется как «failed», и обработка пакета продолжается.
+     */
+    public BatchProcessingResult processPending() {
+<span class="fc" id="L167">        List&lt;Long&gt; ids = transactionTemplate.execute(status -&gt; eventRepository.findIdsByStatus(</span>
+<span class="fc" id="L168">                EventStatus.NEW, PageRequest.of(0, properties.eventBatchSize())));</span>
+<span class="fc" id="L169">        int accrued = 0;</span>
+<span class="fc" id="L170">        int noBonus = 0;</span>
+<span class="fc" id="L171">        int skipped = 0;</span>
+<span class="fc" id="L172">        int failed = 0;</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (Long id : ids) {</span>
+            EventOutcome outcome;
+            try {
+<span class="fc" id="L176">                outcome = transactionTemplate.execute(status -&gt; process(id)).outcome();</span>
+<span class="fc" id="L177">            } catch (RuntimeException ex) {</span>
+<span class="fc" id="L178">                log.error(&quot;Непредвиденная ошибка обработки события {}&quot;, id, ex);</span>
+<span class="fc" id="L179">                markFailedSafely(id, ex);</span>
+<span class="fc" id="L180">                outcome = EventOutcome.FAILED;</span>
+<span class="fc" id="L181">            }</span>
+<span class="pc bpc" id="L182" title="1 of 5 branches missed.">            switch (outcome) {</span>
+<span class="fc" id="L183">                case ACCRUED -&gt; accrued++;</span>
+<span class="fc" id="L184">                case NO_BONUS -&gt; noBonus++;</span>
+<span class="fc" id="L185">                case SKIPPED -&gt; skipped++;</span>
+<span class="fc" id="L186">                case FAILED -&gt; failed++;</span>
+            }
+<span class="fc" id="L188">        }</span>
+<span class="fc" id="L189">        return new BatchProcessingResult(ids.size(), accrued, noBonus, skipped, failed);</span>
+    }
+
+    /** Фиксирует непредвиденный сбой в отдельной транзакции; ошибка фиксации только логируется. */
+    private void markFailedSafely(Long eventId, RuntimeException cause) {
+        try {
+<span class="fc" id="L195">            transactionTemplate.executeWithoutResult(status -&gt; eventRepository.findById(eventId)</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">                    .filter(e -&gt; e.getStatus() == EventStatus.NEW)</span>
+<span class="fc" id="L197">                    .ifPresent(e -&gt; e.markFailed(&quot;Внутренняя ошибка обработки: &quot; + cause.getClass().getSimpleName())));</span>
+<span class="nc" id="L198">        } catch (RuntimeException ex) {</span>
+<span class="nc" id="L199">            log.error(&quot;Не удалось отметить событие {} как failed&quot;, eventId, ex);</span>
+<span class="fc" id="L200">        }</span>
+<span class="fc" id="L201">    }</span>
+
+    /** Извлекает из события код показателя и значение KPI. */
+    EventSignal parse(BusinessEvent event) {
+        JsonNode payload;
+        try {
+<span class="fc" id="L207">            payload = objectMapper.readTree(event.getPayload());</span>
+<span class="fc" id="L208">        } catch (JsonProcessingException e) {</span>
+<span class="fc" id="L209">            throw new InvalidCalculationInputException(&quot;Некорректные входные данные: payload события не является JSON&quot;);</span>
+<span class="fc" id="L210">        }</span>
+        String kpiCode;
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (KPI_CLOSED.equals(event.getEventType())) {</span>
+<span class="fc" id="L213">            kpiCode = payload.path(&quot;kpi&quot;).textValue();</span>
+<span class="pc bpc" id="L214" title="1 of 4 branches missed.">            if (kpiCode == null || kpiCode.isBlank()) {</span>
+<span class="fc" id="L215">                throw new InvalidCalculationInputException(&quot;Некорректные входные данные: не указан показатель KPI&quot;);</span>
+            }
+        } else {
+<span class="fc" id="L218">            kpiCode = EVENT_TYPE_KPI.get(event.getEventType());</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">            if (kpiCode == null) {</span>
+<span class="fc" id="L220">                throw new InvalidCalculationInputException(&quot;Неизвестный тип события: &quot; + event.getEventType());</span>
+            }
+        }
+<span class="fc" id="L223">        JsonNode valueNode = payload.path(&quot;value&quot;);</span>
+<span class="fc" id="L224">        BigDecimal value = null;</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (valueNode.isNumber()) {</span>
+<span class="fc" id="L226">            value = valueNode.decimalValue();</span>
+<span class="fc bfc" id="L227" title="All 4 branches covered.">        } else if (!valueNode.isMissingNode() &amp;&amp; !valueNode.isNull()) {</span>
+<span class="fc" id="L228">            throw new InvalidCalculationInputException(&quot;Некорректные входные данные: значение KPI не является числом&quot;);</span>
+        }
+<span class="fc" id="L230">        return new EventSignal(kpiCode, value);</span>
+    }
+
+    private static String reason(AccrualRule rule, EventSignal signal) {
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (signal.value() == null) {</span>
+<span class="fc" id="L235">            return rule.getName();</span>
+        }
+<span class="fc" id="L237">        return rule.getName() + &quot;, KPI &quot; + signal.value().stripTrailingZeros().toPlainString() + &quot; %&quot;;</span>
+    }
+
+    /**
+     * Данные события, нужные для расчёта.
+     *
+     * @param kpiCode код показателя, по которому ищется правило
+     * @param value   уровень достижения KPI, % ({@code null} для событий без значения)
+     */
+<span class="fc" id="L246">    record EventSignal(String kpiCode, BigDecimal value) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">OperationQueryService.java</span></div><h1>OperationQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import static by.technosoft.bonus.repository.OperationSpecifications.all;
+import static by.technosoft.bonus.repository.OperationSpecifications.createdBefore;
+import static by.technosoft.bonus.repository.OperationSpecifications.createdFrom;
+import static by.technosoft.bonus.repository.OperationSpecifications.department;
+import static by.technosoft.bonus.repository.OperationSpecifications.employee;
+import static by.technosoft.bonus.repository.OperationSpecifications.idIn;
+import static by.technosoft.bonus.repository.OperationSpecifications.statusIn;
+import static by.technosoft.bonus.repository.OperationSpecifications.type;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.config.BonusProperties;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationReview;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.ReviewDecision;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.repository.OperationReviewRepository;
+import by.technosoft.bonus.service.PointsFormat;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+
+/**
+ * Чтение журнала операций: поиск с фильтрами (HR, финотдел), очередь контроля финотдела,
+ * загрузка операций после команд (начисление, корректировка, подтверждение).
+ */
+@Service
+@Transactional(readOnly = true)
+public class OperationQueryService {
+
+<span class="fc" id="L48">    private static final Sort OLDEST_FIRST = Sort.by(Sort.Order.asc(&quot;createdAt&quot;), Sort.Order.asc(&quot;id&quot;));</span>
+
+    /**
+     * Операция с пояснением для людей.
+     *
+     * @param operation операция (владелец счёта и автор загружены)
+     * @param comment   комментарий финотдела или причина согласования; {@code null} — нет
+     * @param disputed  финотдел пометил проведённую операцию как спорную
+     */
+<span class="fc" id="L57">    public record OperationEntry(Operation operation, String comment, boolean disputed) {</span>
+    }
+
+    /**
+     * Фильтр журнала операций; {@code null} — без ограничения.
+     *
+     * @param from дата начала периода включительно
+     * @param to   дата конца периода включительно
+     * @param text подстрока номера, ФИО или причины
+     */
+<span class="fc" id="L67">    public record OperationFilter(Long employeeId, Long departmentId, OperationType type,</span>
+                                  Set&lt;OperationStatus&gt; statuses, LocalDate from, LocalDate to, String text) {
+    }
+
+    private final OperationRepository operationRepository;
+    private final OperationReviewRepository reviewRepository;
+    private final BonusProperties properties;
+    private final Clock clock;
+
+    public OperationQueryService(OperationRepository operationRepository,
+                                 OperationReviewRepository reviewRepository,
+                                 BonusProperties properties,
+<span class="fc" id="L79">                                 Clock clock) {</span>
+<span class="fc" id="L80">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L81">        this.reviewRepository = reviewRepository;</span>
+<span class="fc" id="L82">        this.properties = properties;</span>
+<span class="fc" id="L83">        this.clock = clock;</span>
+<span class="fc" id="L84">    }</span>
+
+    /** Журнал операций с фильтрами, новые сверху. */
+    public List&lt;OperationEntry&gt; search(OperationFilter filter) {
+<span class="pc bpc" id="L88" title="2 of 6 branches missed.">        if (filter.from() != null &amp;&amp; filter.to() != null &amp;&amp; filter.from().isAfter(filter.to())) {</span>
+<span class="fc" id="L89">            throw new DomainValidationException(&quot;Дата начала периода позже даты окончания.&quot;);</span>
+        }
+<span class="fc" id="L91">        ZoneId zone = clock.getZone();</span>
+<span class="fc" id="L92">        List&lt;Operation&gt; ops = operationRepository.findAll(all()</span>
+<span class="fc" id="L93">                        .and(employee(filter.employeeId()))</span>
+<span class="fc" id="L94">                        .and(department(filter.departmentId()))</span>
+<span class="fc" id="L95">                        .and(type(filter.type()))</span>
+<span class="fc" id="L96">                        .and(statusIn(filter.statuses()))</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">                        .and(createdFrom(filter.from() == null ? null : BonusPeriods.startOfDay(filter.from(), zone)))</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">                        .and(createdBefore(filter.to() == null ? null</span>
+<span class="nc" id="L99">                                : BonusPeriods.startOfDay(filter.to().plusDays(1), zone))),</span>
+                AccountQueryService.NEWEST_FIRST);
+<span class="fc" id="L101">        return describe(ops.stream().filter(containsText(filter.text())).toList());</span>
+    }
+
+    /** Операция по id (после команды), владелец и автор загружены. */
+    public OperationEntry get(Long id) {
+<span class="fc" id="L106">        List&lt;OperationEntry&gt; found = getAll(List.of(id));</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (found.isEmpty()) {</span>
+<span class="fc" id="L108">            throw new ObjectNotFoundException(&quot;Операция не найдена. Обновите журнал.&quot;);</span>
+        }
+<span class="fc" id="L110">        return found.get(0);</span>
+    }
+
+    /** Операции по списку id в порядке списка. */
+    public List&lt;OperationEntry&gt; getAll(Collection&lt;Long&gt; ids) {
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (ids.isEmpty()) {</span>
+<span class="fc" id="L116">            return List.of();</span>
+        }
+<span class="fc" id="L118">        Map&lt;Long, OperationEntry&gt; byId = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L119">        describe(operationRepository.findAll(idIn(ids), OLDEST_FIRST))</span>
+<span class="fc" id="L120">                .forEach(e -&gt; byId.put(e.operation().getId(), e));</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        return ids.stream().map(byId::get).filter(e -&gt; e != null).toList();</span>
+    }
+
+    /**
+     * Очередь контроля финотдела: операции на согласовании (старые сверху), затем проведённые
+     * операции, помеченные спорными.
+     */
+    public List&lt;OperationEntry&gt; controlQueue() {
+<span class="fc" id="L129">        List&lt;Operation&gt; queue = new ArrayList&lt;&gt;(operationRepository.findAll(</span>
+<span class="fc" id="L130">                statusIn(Set.of(OperationStatus.PENDING)), OLDEST_FIRST));</span>
+<span class="fc" id="L131">        List&lt;Long&gt; disputedIds = reviewRepository.findOperationIdsByDecision(ReviewDecision.DISPUTED);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (!disputedIds.isEmpty()) {</span>
+<span class="fc" id="L133">            queue.addAll(operationRepository.findAll(</span>
+<span class="fc" id="L134">                    idIn(disputedIds).and(statusIn(OperationStatus.SETTLED)), OLDEST_FIRST));</span>
+        }
+<span class="fc" id="L136">        return describe(queue).stream()</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">                .filter(e -&gt; e.operation().getStatus() == OperationStatus.PENDING || e.disputed())</span>
+<span class="fc" id="L138">                .toList();</span>
+    }
+
+    /**
+     * Добавляет к операциям последнее решение финотдела и пояснение (одним запросом);
+     * порядок списка сохраняется. Используется и другими запросами (история счёта, UC2) — DRY.
+     */
+    public List&lt;OperationEntry&gt; describe(List&lt;Operation&gt; ops) {
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (ops.isEmpty()) {</span>
+<span class="fc" id="L147">            return List.of();</span>
+        }
+<span class="fc" id="L149">        Map&lt;Long, OperationReview&gt; lastReview = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        for (OperationReview review : reviewRepository.findByOperationIds(</span>
+<span class="fc" id="L151">                ops.stream().map(Operation::getId).toList())) {</span>
+<span class="fc" id="L152">            lastReview.put(review.getOperation().getId(), review); // список по возрастанию времени</span>
+<span class="fc" id="L153">        }</span>
+<span class="fc" id="L154">        String limitComment = &quot;Превышен лимит &quot; + PointsFormat.format(properties.accrualLimit()) + &quot; на сотрудника&quot;;</span>
+<span class="fc" id="L155">        return ops.stream().map(op -&gt; {</span>
+<span class="fc" id="L156">            OperationReview review = lastReview.get(op.getId());</span>
+<span class="fc bfc" id="L157" title="All 4 branches covered.">            boolean disputed = review != null &amp;&amp; review.getDecision() == ReviewDecision.DISPUTED</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">                    &amp;&amp; op.getStatus().isSettled();</span>
+<span class="fc bfc" id="L159" title="All 4 branches covered.">            String comment = review != null &amp;&amp; review.getComment() != null ? review.getComment()</span>
+<span class="fc" id="L160">                    : pendingComment(op, limitComment);</span>
+<span class="fc" id="L161">            return new OperationEntry(op, comment, disputed);</span>
+<span class="fc" id="L162">        }).toList();</span>
+    }
+
+    /**
+     * Поиск подстроки в номере, ФИО сотрудника или причине без учёта регистра. Выполняется в Java:
+     * функция lower() PostgreSQL при правилах сортировки «C» не переводит кириллицу в нижний регистр,
+     * поэтому «Новик» не нашёлся бы по «новик». Остальные условия отбирают строки в БД.
+     */
+    static Predicate&lt;Operation&gt; containsText(String query) {
+<span class="pc bpc" id="L171" title="1 of 4 branches missed.">        if (query == null || query.isBlank()) {</span>
+<span class="fc" id="L172">            return op -&gt; true;</span>
+        }
+<span class="fc" id="L174">        String q = query.trim().toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L175">        return op -&gt; (op.getNumber() + &quot; &quot; + op.getAccount().getEmployee().getFullName() + &quot; &quot; + op.getReason())</span>
+<span class="fc" id="L176">                .toLowerCase(Locale.ROOT).contains(q);</span>
+    }
+
+    private static String pendingComment(Operation op, String limitComment) {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (op.getStatus() != OperationStatus.PENDING) {</span>
+<span class="fc" id="L181">            return null;</span>
+        }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        return op.getType() == OperationType.CORRECTION</span>
+<span class="fc" id="L184">                ? &quot;Баланс сотрудника стал бы отрицательным: нужно согласование финотдела&quot;</span>
+<span class="fc" id="L185">                : limitComment;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

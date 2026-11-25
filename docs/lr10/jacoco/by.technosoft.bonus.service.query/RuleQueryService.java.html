@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RuleQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">RuleQueryService.java</span></div><h1>RuleQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.repository.AccrualRuleRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+
+/**
+ * Чтение правил начисления (UC8). Правило — цепочка версий с одним показателем KPI;
+ * на экран выводится последняя версия (в том числе ещё не вступившая в силу).
+ */
+@Service
+@Transactional(readOnly = true)
+public class RuleQueryService {
+
+    /** Последняя версия правила и признак «применялось в текущем периоде» (изменения будут отложены). */
+<span class="fc" id="L27">    public record RuleEntry(AccrualRule rule, boolean usedInCurrentPeriod) {</span>
+    }
+
+<span class="fc" id="L30">    private static final Comparator&lt;AccrualRule&gt; NEWEST_VERSION =</span>
+<span class="fc" id="L31">            Comparator.comparing(AccrualRule::getEffectiveFrom).thenComparing(AccrualRule::getId);</span>
+
+    private final AccrualRuleRepository ruleRepository;
+    private final OperationRepository operationRepository;
+    private final Clock clock;
+
+    public RuleQueryService(AccrualRuleRepository ruleRepository, OperationRepository operationRepository,
+<span class="fc" id="L38">                            Clock clock) {</span>
+<span class="fc" id="L39">        this.ruleRepository = ruleRepository;</span>
+<span class="fc" id="L40">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L41">        this.clock = clock;</span>
+<span class="fc" id="L42">    }</span>
+
+    /** Правила (последние версии) в порядке создания. */
+    public List&lt;RuleEntry&gt; list() {
+<span class="fc" id="L46">        Map&lt;Long, AccrualRule&gt; latestByKpi = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (AccrualRule rule : ruleRepository.findAllWithKpi()) { // по возрастанию id: порядок первых версий</span>
+<span class="fc" id="L48">            latestByKpi.merge(rule.getKpi().getId(), rule,</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">                    (a, b) -&gt; NEWEST_VERSION.compare(a, b) &gt;= 0 ? a : b);</span>
+<span class="fc" id="L50">        }</span>
+<span class="fc" id="L51">        return latestByKpi.values().stream().map(this::entry).toList();</span>
+    }
+
+    /** Версия правила с признаком использования. */
+    public RuleEntry get(Long ruleId) {
+<span class="fc" id="L56">        return ruleRepository.findWithKpiById(ruleId).map(this::entry)</span>
+<span class="pc" id="L57">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Правило не найдено. Обновите список.&quot;));</span>
+    }
+
+    /**
+     * Применялось ли правило (любая версия с тем же показателем) в расчётах текущего периода —
+     * месяца, квартала или года по периодичности правила.
+     */
+    public boolean usedInCurrentPeriod(AccrualRule rule) {
+<span class="fc" id="L65">        LocalDate start = BonusPeriods.periodStart(rule.getPeriodicity(), LocalDate.now(clock));</span>
+<span class="fc" id="L66">        return operationRepository.existsByRuleKpiSince(rule.getKpi().getId(),</span>
+<span class="fc" id="L67">                BonusPeriods.startOfDay(start, clock.getZone()));</span>
+    }
+
+    private RuleEntry entry(AccrualRule rule) {
+<span class="fc" id="L71">        return new RuleEntry(rule, usedInCurrentPeriod(rule));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

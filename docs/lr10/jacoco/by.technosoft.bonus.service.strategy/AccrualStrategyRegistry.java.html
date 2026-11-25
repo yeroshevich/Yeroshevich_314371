@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualStrategyRegistry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.strategy</a> &gt; <span class="el_source">AccrualStrategyRegistry.java</span></div><h1>AccrualStrategyRegistry.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.strategy;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.RulePeriodicity;
+
+/**
+ * Реестр (фабрика) стратегий: сопоставляет периодичность правила и стратегию расчёта.
+ * Spring передаёт в конструктор все бины {@link AccrualStrategy}; при старте проверяется,
+ * что каждая периодичность обслуживается ровно одной стратегией.
+ */
+@Component
+public class AccrualStrategyRegistry {
+
+    private final Map&lt;RulePeriodicity, AccrualStrategy&gt; byPeriodicity;
+
+<span class="fc" id="L23">    public AccrualStrategyRegistry(List&lt;AccrualStrategy&gt; strategies) {</span>
+<span class="fc" id="L24">        Map&lt;RulePeriodicity, AccrualStrategy&gt; map = new EnumMap&lt;&gt;(RulePeriodicity.class);</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        for (AccrualStrategy strategy : strategies) {</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            for (RulePeriodicity periodicity : strategy.supportedPeriodicities()) {</span>
+<span class="fc" id="L27">                AccrualStrategy previous = map.putIfAbsent(periodicity, strategy);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">                if (previous != null) {</span>
+<span class="fc" id="L29">                    throw new IllegalStateException(&quot;Периодичность &quot; + periodicity + &quot; обслуживают две стратегии: &quot;</span>
+<span class="fc" id="L30">                            + previous.getClass().getSimpleName() + &quot; и &quot; + strategy.getClass().getSimpleName());</span>
+                }
+<span class="fc" id="L32">            }</span>
+<span class="fc" id="L33">        }</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        for (RulePeriodicity periodicity : RulePeriodicity.values()) {</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">            if (!map.containsKey(periodicity)) {</span>
+<span class="fc" id="L36">                throw new IllegalStateException(&quot;Нет стратегии расчёта для периодичности &quot; + periodicity);</span>
+            }
+        }
+<span class="fc" id="L39">        this.byPeriodicity = Collections.unmodifiableMap(map);</span>
+<span class="fc" id="L40">    }</span>
+
+    /** Стратегия для правила. */
+    public AccrualStrategy forRule(AccrualRule rule) {
+<span class="fc" id="L44">        return byPeriodicity.get(rule.getPeriodicity());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CampaignMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">CampaignMapper.java</span></div><h1>CampaignMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import static by.technosoft.bonus.web.mapper.ApiValues.code;
+import static by.technosoft.bonus.web.mapper.ApiValues.id;
+import static by.technosoft.bonus.web.mapper.ApiValues.number;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.Campaign;
+import by.technosoft.bonus.service.admin.CampaignAdminService.CampaignCommand;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.query.CampaignQueryService.CampaignEntry;
+import by.technosoft.bonus.web.dto.CampaignDto;
+import by.technosoft.bonus.web.dto.CampaignRequest;
+
+/** Бонусная кампания ↔ JSON (UC9). */
+@Component
+public class CampaignMapper {
+
+    private final Clock clock;
+
+<span class="fc" id="L27">    public CampaignMapper(Clock clock) {</span>
+<span class="fc" id="L28">        this.clock = clock;</span>
+<span class="fc" id="L29">    }</span>
+
+    public CampaignDto toDto(CampaignEntry entry) {
+<span class="fc" id="L32">        Campaign c = entry.campaign();</span>
+<span class="fc" id="L33">        return new CampaignDto(id(c.getId()), c.getName(), c.getDescription(), c.getStartDate(), c.getEndDate(),</span>
+<span class="fc" id="L34">                c.getTargets().stream().map(t -&gt; id(t.getId().getDepartmentId())).sorted().toList(),</span>
+<span class="fc" id="L35">                number(c.getCoefficient()), c.getBudget(), entry.spent(), code(c.getStatus()));</span>
+    }
+
+    public CampaignCommand toCommand(CampaignRequest dto) {
+<span class="fc" id="L39">        return new CampaignCommand(dto.name(), dto.description(), businessDate(dto.startDate()),</span>
+<span class="fc" id="L40">                businessDate(dto.endDate()), dto.departmentIds(), dto.coefficient(), dto.budget());</span>
+    }
+
+    /**
+     * Дата кампании из запроса: «2026-12-01» или момент ISO 8601 («2026-11-30T21:00:00.000Z» —
+     * так браузер передаёт начало суток), переведённый в часовой пояс компании.
+     */
+    LocalDate businessDate(String value) {
+<span class="fc" id="L48">        String text = value.trim();</span>
+        try {
+<span class="fc" id="L50">            return LocalDate.parse(text);</span>
+<span class="fc" id="L51">        } catch (DateTimeParseException notDate) {</span>
+            try {
+<span class="fc" id="L53">                return OffsetDateTime.parse(text).atZoneSameInstant(clock.getZone()).toLocalDate();</span>
+<span class="fc" id="L54">            } catch (DateTimeParseException notMoment) {</span>
+<span class="fc" id="L55">                throw new DomainValidationException(&quot;Дата «&quot; + text + &quot;» не распознана: нужен формат ГГГГ-ММ-ДД.&quot;);</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

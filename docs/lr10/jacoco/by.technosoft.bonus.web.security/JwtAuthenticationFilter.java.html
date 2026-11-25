@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.security;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.service.auth.AuthenticationService;
+import by.technosoft.bonus.service.exception.AccessDeniedDomainException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Аутентификация по заголовку {@code Authorization: Bearer &lt;JWT&gt;} (SEC-1). Токен проверяется
+ * {@link TokenService}; учётная запись перечитывается из БД, поэтому заблокированный пользователь
+ * и сменённая роль вступают в силу сразу, не дожидаясь истечения токена.
+ * Без токена или с неверным токеном запрос остаётся анонимным — ответ 401 формирует
+ * {@link RestAuthenticationEntryPoint}, если адрес требует входа.
+ */
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    /** Атрибут запроса с причиной отказа — её показывает {@link RestAuthenticationEntryPoint}. */
+<span class="fc" id="L31">    public static final String AUTH_ERROR_ATTRIBUTE = JwtAuthenticationFilter.class.getName() + &quot;.error&quot;;</span>
+
+    private static final String BEARER = &quot;Bearer &quot;;
+
+    private final TokenService tokenService;
+    private final AuthenticationService authenticationService;
+
+<span class="fc" id="L38">    public JwtAuthenticationFilter(TokenService tokenService, AuthenticationService authenticationService) {</span>
+<span class="fc" id="L39">        this.tokenService = tokenService;</span>
+<span class="fc" id="L40">        this.authenticationService = authenticationService;</span>
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L46">        bearerToken(request).flatMap(tokenService::verify).ifPresent(userId -&gt; authenticate(userId, request));</span>
+<span class="fc" id="L47">        chain.doFilter(request, response);</span>
+<span class="fc" id="L48">    }</span>
+
+    private void authenticate(Long userId, HttpServletRequest request) {
+        try {
+<span class="fc" id="L52">            AppUser user = authenticationService.activeUser(userId);</span>
+<span class="fc" id="L53">            AuthenticatedUser principal = AuthenticatedUser.of(user);</span>
+<span class="fc" id="L54">            var authentication = new UsernamePasswordAuthenticationToken(principal, null,</span>
+<span class="fc" id="L55">                    List.of(new SimpleGrantedAuthority(principal.authority())));</span>
+<span class="fc" id="L56">            SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+<span class="nc" id="L57">        } catch (AccessDeniedDomainException e) {</span>
+<span class="nc" id="L58">            request.setAttribute(AUTH_ERROR_ATTRIBUTE, e.getMessage());</span>
+<span class="fc" id="L59">        }</span>
+<span class="fc" id="L60">    }</span>
+
+    /** Токен из заголовка запроса. */
+    public static Optional&lt;String&gt; bearerToken(HttpServletRequest request) {
+<span class="fc" id="L64">        String header = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
+<span class="pc bpc" id="L65" title="2 of 6 branches missed.">        if (header == null || !header.startsWith(BEARER) || header.length() == BEARER.length()) {</span>
+<span class="fc" id="L66">            return Optional.empty();</span>
+        }
+<span class="fc" id="L68">        return Optional.of(header.substring(BEARER.length()).trim());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

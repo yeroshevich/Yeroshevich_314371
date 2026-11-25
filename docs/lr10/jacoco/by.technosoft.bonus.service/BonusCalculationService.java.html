@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BonusCalculationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">BonusCalculationService.java</span></div><h1>BonusCalculationService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.Campaign;
+import by.technosoft.bonus.domain.CampaignStatus;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.repository.AccrualRuleRepository;
+import by.technosoft.bonus.repository.CampaignDepartmentRepository;
+import by.technosoft.bonus.repository.CampaignRepository;
+import by.technosoft.bonus.repository.EmployeeRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.dto.CalculationRequest;
+import by.technosoft.bonus.service.dto.CalculationResult;
+import by.technosoft.bonus.service.exception.BonusDomainException;
+import by.technosoft.bonus.service.exception.InvalidCalculationInputException;
+import by.technosoft.bonus.service.strategy.AccrualStrategy;
+import by.technosoft.bonus.service.strategy.AccrualStrategyRegistry;
+import by.technosoft.bonus.service.strategy.BaseAmount;
+
+/**
+ * Сервис расчёта начислений (UC6). Координирует валидацию входных данных,
+ * применение правила (через {@link AccrualStrategy}) и учёт бонусных кампаний.
+ * Сам ничего не записывает: результат — объект-значение {@link CalculationResult}.
+ * &lt;p&gt;
+ * Доменные исключения не помечают внешнюю транзакцию на откат ({@code noRollbackFor}):
+ * вызывающий сервис может перехватить ошибку расчёта и зафиксировать её (UC4).
+ */
+@Service
+@Transactional(readOnly = true, noRollbackFor = BonusDomainException.class)
+public class BonusCalculationService {
+
+    /** Шаг округления по умолчанию, если в params правила нет roundTo. */
+    static final int DEFAULT_ROUND_TO = 50;
+
+    /** Статусы операций, которые расходуют бюджет кампании (pending — резерв). */
+<span class="fc" id="L51">    private static final Set&lt;OperationStatus&gt; BUDGET_STATUSES =</span>
+<span class="fc" id="L52">            EnumSet.of(OperationStatus.ACCRUED, OperationStatus.CORRECTED, OperationStatus.PENDING);</span>
+
+    private final EmployeeRepository employeeRepository;
+    private final AccrualRuleRepository ruleRepository;
+    private final CampaignRepository campaignRepository;
+    private final CampaignDepartmentRepository campaignDepartmentRepository;
+    private final OperationRepository operationRepository;
+    private final AccrualStrategyRegistry strategyRegistry;
+    private final ObjectMapper objectMapper;
+
+    public BonusCalculationService(EmployeeRepository employeeRepository,
+                                   AccrualRuleRepository ruleRepository,
+                                   CampaignRepository campaignRepository,
+                                   CampaignDepartmentRepository campaignDepartmentRepository,
+                                   OperationRepository operationRepository,
+                                   AccrualStrategyRegistry strategyRegistry,
+<span class="fc" id="L68">                                   ObjectMapper objectMapper) {</span>
+<span class="fc" id="L69">        this.employeeRepository = employeeRepository;</span>
+<span class="fc" id="L70">        this.ruleRepository = ruleRepository;</span>
+<span class="fc" id="L71">        this.campaignRepository = campaignRepository;</span>
+<span class="fc" id="L72">        this.campaignDepartmentRepository = campaignDepartmentRepository;</span>
+<span class="fc" id="L73">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L74">        this.strategyRegistry = strategyRegistry;</span>
+<span class="fc" id="L75">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * UC6 «Расчёт бонуса» по правилу (BR-4, BR-5): валидация входных данных → стратегия правила →
+     * коэффициент активной кампании подразделения → округление до params.roundTo.
+     * Некорректные входные данные — {@link InvalidCalculationInputException}, начисление не производится.
+     */
+    public CalculationResult calculate(CalculationRequest request) {
+<span class="fc bfc" id="L84" title="All 8 branches covered.">        if (request == null || request.employeeId() == null || request.ruleId() == null || request.onDate() == null) {</span>
+<span class="fc" id="L85">            throw new InvalidCalculationInputException(</span>
+                    &quot;Некорректные входные данные: не указаны сотрудник, правило или дата расчёта&quot;);
+        }
+<span class="fc" id="L88">        Employee employee = employeeRepository.findById(request.employeeId())</span>
+<span class="fc" id="L89">                .orElseThrow(() -&gt; new InvalidCalculationInputException(</span>
+<span class="fc" id="L90">                        &quot;Некорректные входные данные: сотрудник &quot; + request.employeeId() + &quot; не найден&quot;));</span>
+<span class="fc" id="L91">        AccrualRule rule = ruleRepository.findById(request.ruleId())</span>
+<span class="fc" id="L92">                .orElseThrow(() -&gt; new InvalidCalculationInputException(</span>
+<span class="fc" id="L93">                        &quot;Некорректные входные данные: правило &quot; + request.ruleId() + &quot; не найдено&quot;));</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (!rule.isApplicableOn(request.onDate())) {</span>
+<span class="fc" id="L95">            throw new InvalidCalculationInputException(</span>
+<span class="fc" id="L96">                    &quot;Правило «&quot; + rule.getName() + &quot;» не действует на &quot; + request.onDate());</span>
+        }
+
+<span class="fc" id="L99">        AccrualStrategy strategy = strategyRegistry.forRule(rule);</span>
+<span class="fc" id="L100">        BaseAmount base = strategy.calculate(rule, request.kpiValue());</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (base.isZero()) {</span>
+<span class="fc" id="L102">            return new CalculationResult(employee.getId(), rule.getId(), BigDecimal.ZERO, BigDecimal.ONE, null, 0,</span>
+<span class="fc" id="L103">                    base.formula());</span>
+        }
+
+<span class="fc" id="L106">        int roundTo = roundTo(rule);</span>
+<span class="fc" id="L107">        List&lt;Campaign&gt; campaigns = campaignRepository.findRunningForDepartment(</span>
+<span class="fc" id="L108">                employee.getDepartment().getId(), CampaignStatus.ACTIVE, request.onDate());</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (Campaign campaign : campaigns) {</span>
+<span class="fc" id="L110">            int total = roundToStep(base.value().multiply(campaign.getCoefficient()), roundTo);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">            if (fitsBudget(campaign, total)) {</span>
+<span class="fc" id="L112">                String formula = base.formula() + &quot;; × &quot; + campaign.getCoefficient().toPlainString()</span>
+<span class="fc" id="L113">                        + &quot; (кампания «&quot; + campaign.getName() + &quot;»); округление до &quot; + roundTo + &quot; → &quot; + total;</span>
+<span class="fc" id="L114">                return new CalculationResult(employee.getId(), rule.getId(), base.value(),</span>
+<span class="fc" id="L115">                        campaign.getCoefficient(), campaign.getId(), total, formula);</span>
+            }
+<span class="fc" id="L117">        }</span>
+<span class="fc" id="L118">        int total = roundToStep(base.value(), roundTo);</span>
+<span class="fc" id="L119">        return new CalculationResult(employee.getId(), rule.getId(), base.value(), BigDecimal.ONE, null, total,</span>
+<span class="fc" id="L120">                base.formula() + &quot;; округление до &quot; + roundTo + &quot; → &quot; + total);</span>
+    }
+
+    /**
+     * UC5/UC6: расчёт ручного начисления — сумма × коэффициент выбранной кампании,
+     * если она активна на дату, охватывает подразделение сотрудника и её бюджет не исчерпан.
+     * Округление — до целого балла.
+     */
+    public CalculationResult calculateManual(Long employeeId, int amount, Long campaignId, LocalDate onDate) {
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L130">            throw new InvalidCalculationInputException(&quot;Некорректные входные данные: сумма должна быть больше нуля&quot;);</span>
+        }
+<span class="fc" id="L132">        Employee employee = employeeRepository.findById(employeeId)</span>
+<span class="pc" id="L133">                .orElseThrow(() -&gt; new InvalidCalculationInputException(</span>
+                        &quot;Некорректные входные данные: сотрудник &quot; + employeeId + &quot; не найден&quot;));
+<span class="fc" id="L135">        BigDecimal base = BigDecimal.valueOf(amount);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (campaignId != null) {</span>
+<span class="fc" id="L137">            Campaign campaign = campaignRepository.findById(campaignId)</span>
+<span class="fc" id="L138">                    .orElseThrow(() -&gt; new InvalidCalculationInputException(</span>
+                            &quot;Некорректные входные данные: кампания &quot; + campaignId + &quot; не найдена&quot;));
+<span class="fc" id="L140">            boolean targeted = campaignDepartmentRepository</span>
+<span class="fc" id="L141">                    .existsByCampaignIdAndDepartmentId(campaignId, employee.getDepartment().getId());</span>
+<span class="fc bfc" id="L142" title="All 4 branches covered.">            if (campaign.isRunningOn(onDate) &amp;&amp; targeted) {</span>
+<span class="fc" id="L143">                int total = roundToStep(base.multiply(campaign.getCoefficient()), 1);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                if (fitsBudget(campaign, total)) {</span>
+<span class="fc" id="L145">                    return new CalculationResult(employeeId, null, base, campaign.getCoefficient(), campaign.getId(),</span>
+<span class="fc" id="L146">                            total, amount + &quot; × &quot; + campaign.getCoefficient().toPlainString()</span>
+<span class="fc" id="L147">                            + &quot; (кампания «&quot; + campaign.getName() + &quot;») = &quot; + total);</span>
+                }
+            }
+        }
+<span class="fc" id="L151">        return new CalculationResult(employeeId, null, base, BigDecimal.ONE, null, amount, String.valueOf(amount));</span>
+    }
+
+    /** Остаток бюджета кампании позволяет провести {@code amount}; кампания без бюджета не ограничена. */
+    private boolean fitsBudget(Campaign campaign, int amount) {
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (campaign.getBudget() == null) {</span>
+<span class="fc" id="L157">            return true;</span>
+        }
+<span class="fc" id="L159">        long spent = operationRepository.sumAmountByCampaign(campaign.getId(), BUDGET_STATUSES);</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        return spent + amount &lt;= campaign.getBudget();</span>
+    }
+
+    /** Шаг округления из JSONB params правила ({@code roundTo}). */
+    private int roundTo(AccrualRule rule) {
+        try {
+<span class="fc" id="L166">            JsonNode node = objectMapper.readTree(rule.getParams()).path(&quot;roundTo&quot;);</span>
+<span class="pc bpc" id="L167" title="1 of 4 branches missed.">            return node.canConvertToInt() &amp;&amp; node.asInt() &gt; 0 ? node.asInt() : DEFAULT_ROUND_TO;</span>
+<span class="fc" id="L168">        } catch (JsonProcessingException e) {</span>
+<span class="fc" id="L169">            throw new InvalidCalculationInputException(</span>
+<span class="fc" id="L170">                    &quot;Некорректные параметры правила «&quot; + rule.getName() + &quot;»: params не является JSON&quot;);</span>
+        }
+    }
+
+    /** Округление до ближайшего кратного {@code step} (половина — вверх). */
+    static int roundToStep(BigDecimal value, int step) {
+<span class="fc" id="L176">        BigDecimal stepValue = BigDecimal.valueOf(step);</span>
+<span class="fc" id="L177">        return value.divide(stepValue, 0, RoundingMode.HALF_UP).multiply(stepValue).intValueExact();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

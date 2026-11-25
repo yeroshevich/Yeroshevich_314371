@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RuleAdminService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.admin</a> &gt; <span class="el_source">RuleAdminService.java</span></div><h1>RuleAdminService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.admin;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Kpi;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.domain.RulePeriodicity;
+import by.technosoft.bonus.repository.AccrualRuleRepository;
+import by.technosoft.bonus.repository.KpiRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+import by.technosoft.bonus.service.audit.AuditTrail;
+import by.technosoft.bonus.service.exception.ConflictException;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import by.technosoft.bonus.service.query.BonusPeriods;
+import by.technosoft.bonus.service.query.RuleQueryService;
+import by.technosoft.bonus.service.query.RuleQueryService.RuleEntry;
+
+/**
+ * Настройка правил начисления HR (UC8): показатель, вес, база, периодичность, порог.
+ * Правило, уже применённое в расчётах текущего периода, не меняется задним числом:
+ * изменения сохраняются новой версией, которая вступает в силу с начала следующего периода
+ * (альт. поток UC8). Неиспользованное правило правится на месте и действует сразу.
+ */
+@Service
+public class RuleAdminService {
+
+    /** Код ошибки: для показателя уже есть правило. */
+    public static final String RULE_EXISTS = &quot;RULE_EXISTS&quot;;
+
+    /**
+     * Параметры правила.
+     *
+     * @param kpi название показателя KPI; неизвестный показатель добавляется в справочник
+     */
+<span class="fc" id="L47">    public record RuleCommand(String name, String kpi, BigDecimal weight, int basePoints,</span>
+                              RulePeriodicity periodicity, BigDecimal threshold, boolean active) {
+    }
+
+    /**
+     * Итог сохранения.
+     *
+     * @param entry         сохранённая версия правила
+     * @param effectiveFrom дата вступления изменений в силу
+     * @param deferred      изменения отложены до следующего периода
+     */
+<span class="fc" id="L58">    public record RuleSaveOutcome(RuleEntry entry, LocalDate effectiveFrom, boolean deferred) {</span>
+    }
+
+    private final AccessPolicy accessPolicy;
+    private final AccrualRuleRepository ruleRepository;
+    private final KpiRepository kpiRepository;
+    private final RuleQueryService ruleQueryService;
+    private final AuditTrail auditTrail;
+    private final Clock clock;
+
+    public RuleAdminService(AccessPolicy accessPolicy,
+                            AccrualRuleRepository ruleRepository,
+                            KpiRepository kpiRepository,
+                            RuleQueryService ruleQueryService,
+                            AuditTrail auditTrail,
+<span class="fc" id="L73">                            Clock clock) {</span>
+<span class="fc" id="L74">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L75">        this.ruleRepository = ruleRepository;</span>
+<span class="fc" id="L76">        this.kpiRepository = kpiRepository;</span>
+<span class="fc" id="L77">        this.ruleQueryService = ruleQueryService;</span>
+<span class="fc" id="L78">        this.auditTrail = auditTrail;</span>
+<span class="fc" id="L79">        this.clock = clock;</span>
+<span class="fc" id="L80">    }</span>
+
+    /** Новое правило действует сразу. Для одного показателя — одно правило (у него могут быть версии). */
+    @Transactional
+    public RuleSaveOutcome create(Long actorUserId, RuleCommand command) {
+<span class="fc" id="L85">        requireHr(actorUserId);</span>
+<span class="fc" id="L86">        Kpi kpi = findOrCreateKpi(command.kpi());</span>
+<span class="fc" id="L87">        requireNoRuleFor(kpi, null);</span>
+<span class="fc" id="L88">        LocalDate today = LocalDate.now(clock);</span>
+<span class="fc" id="L89">        long id = ruleRepository.nextId();</span>
+<span class="fc" id="L90">        ruleRepository.insert(id, command.name().trim(), kpi.getId(), command.weight(), command.basePoints(),</span>
+<span class="fc" id="L91">                command.periodicity().dbValue(), command.threshold(), command.active(), today, now());</span>
+<span class="fc" id="L92">        auditTrail.record(actorUserId, &quot;Создание правила&quot;, &quot;accrual_rule&quot;, id, details(command, today, false));</span>
+<span class="fc" id="L93">        return new RuleSaveOutcome(ruleQueryService.get(id), today, false);</span>
+    }
+
+    /** Изменение правила: на месте или новой версией со следующего периода. */
+    @Transactional
+    public RuleSaveOutcome update(Long actorUserId, Long ruleId, RuleCommand command) {
+<span class="fc" id="L99">        requireHr(actorUserId);</span>
+<span class="fc" id="L100">        AccrualRule rule = ruleRepository.findWithKpiById(ruleId)</span>
+<span class="fc" id="L101">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Правило не найдено. Обновите список.&quot;));</span>
+<span class="fc" id="L102">        AccrualRule latest = ruleRepository.findVersionsByKpiId(rule.getKpi().getId()).get(0);</span>
+<span class="fc" id="L103">        LocalDate today = LocalDate.now(clock);</span>
+<span class="fc" id="L104">        boolean future = latest.getEffectiveFrom().isAfter(today);</span>
+<span class="pc bpc" id="L105" title="1 of 4 branches missed.">        boolean used = !future &amp;&amp; ruleQueryService.usedInCurrentPeriod(latest);</span>
+
+<span class="fc" id="L107">        long kpiId = latest.getKpi().getId();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (!latest.getKpi().getName().equalsIgnoreCase(command.kpi().trim())) {</span>
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">            if (future || used) {</span>
+<span class="fc" id="L110">                throw new DomainValidationException(&quot;Показатель правила, которое уже применялось в текущем периоде, &quot;</span>
+                        + &quot;менять нельзя. Создайте новое правило для другого показателя.&quot;);
+            }
+<span class="nc" id="L113">            Kpi kpi = findOrCreateKpi(command.kpi());</span>
+<span class="nc" id="L114">            requireNoRuleFor(kpi, latest.getId());</span>
+<span class="nc" id="L115">            kpiId = kpi.getId();</span>
+        }
+
+        long targetId;
+        LocalDate effectiveFrom;
+        boolean deferred;
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (used) {</span>
+<span class="fc" id="L122">            targetId = ruleRepository.nextId();</span>
+<span class="fc" id="L123">            effectiveFrom = BonusPeriods.nextPeriodStart(latest.getPeriodicity(), today);</span>
+<span class="fc" id="L124">            deferred = true;</span>
+<span class="fc" id="L125">            ruleRepository.insertVersion(targetId, latest.getId(), command.name().trim(), command.weight(),</span>
+<span class="fc" id="L126">                    command.basePoints(), command.periodicity().dbValue(), command.threshold(), command.active(),</span>
+<span class="fc" id="L127">                    effectiveFrom, now());</span>
+        } else {
+<span class="fc" id="L129">            targetId = latest.getId();</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">            effectiveFrom = future ? latest.getEffectiveFrom() : today;</span>
+<span class="fc" id="L131">            deferred = future;</span>
+<span class="fc" id="L132">            ruleRepository.update(targetId, command.name().trim(), kpiId, command.weight(), command.basePoints(),</span>
+<span class="fc" id="L133">                    command.periodicity().dbValue(), command.threshold(), command.active(), now());</span>
+        }
+<span class="fc" id="L135">        auditTrail.record(actorUserId, &quot;Изменение правила&quot;, &quot;accrual_rule&quot;, targetId,</span>
+<span class="fc" id="L136">                details(command, effectiveFrom, deferred));</span>
+<span class="fc" id="L137">        return new RuleSaveOutcome(ruleQueryService.get(targetId), effectiveFrom, deferred);</span>
+    }
+
+    private void requireHr(Long actorUserId) {
+<span class="fc" id="L141">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L142">        accessPolicy.requireRole(actor, RoleCode.HR);</span>
+<span class="fc" id="L143">    }</span>
+
+    private Kpi findOrCreateKpi(String name) {
+<span class="fc" id="L146">        String trimmed = name.trim();</span>
+        // Сравнение в Java: upper()/lower() PostgreSQL при правилах «C» не меняют регистр кириллицы.
+<span class="fc" id="L148">        return kpiRepository.findAll().stream().filter(k -&gt; k.getName().equalsIgnoreCase(trimmed)).findFirst()</span>
+<span class="fc" id="L149">                .orElseGet(() -&gt; {</span>
+<span class="fc" id="L150">                    long id = kpiRepository.nextId();</span>
+<span class="fc" id="L151">                    kpiRepository.insert(id, &quot;KPI-&quot; + id, trimmed);</span>
+<span class="fc" id="L152">                    return kpiRepository.findById(id).orElseThrow();</span>
+                });
+    }
+
+    /** Для показателя нет правил, кроме версий правила {@code exceptRuleId}. */
+    private void requireNoRuleFor(Kpi kpi, Long exceptRuleId) {
+<span class="fc" id="L158">        List&lt;AccrualRule&gt; versions = ruleRepository.findVersionsByKpiId(kpi.getId());</span>
+<span class="pc bpc" id="L159" title="1 of 4 branches missed.">        if (versions.stream().anyMatch(r -&gt; !r.getId().equals(exceptRuleId))) {</span>
+<span class="fc" id="L160">            throw new ConflictException(RULE_EXISTS, &quot;Для показателя «&quot; + kpi.getName() + &quot;» уже есть правило «&quot;</span>
+<span class="fc" id="L161">                    + versions.get(0).getName() + &quot;». Измените его вместо создания нового.&quot;);</span>
+        }
+<span class="fc" id="L163">    }</span>
+
+    private OffsetDateTime now() {
+<span class="fc" id="L166">        return OffsetDateTime.now(clock);</span>
+    }
+
+    private static Map&lt;String, Object&gt; details(RuleCommand c, LocalDate effectiveFrom, boolean deferred) {
+<span class="fc" id="L170">        Map&lt;String, Object&gt; details = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L171">        details.put(&quot;label&quot;, c.name().trim());</span>
+<span class="fc" id="L172">        details.put(&quot;weight&quot;, c.weight());</span>
+<span class="fc" id="L173">        details.put(&quot;basePoints&quot;, c.basePoints());</span>
+<span class="fc" id="L174">        details.put(&quot;threshold&quot;, c.threshold());</span>
+<span class="fc" id="L175">        details.put(&quot;active&quot;, c.active());</span>
+<span class="fc" id="L176">        details.put(&quot;effectiveFrom&quot;, effectiveFrom.toString());</span>
+<span class="fc" id="L177">        details.put(&quot;deferred&quot;, deferred);</span>
+<span class="fc" id="L178">        return details;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

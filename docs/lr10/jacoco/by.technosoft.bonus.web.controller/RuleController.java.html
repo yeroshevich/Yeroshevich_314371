@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RuleController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.controller</a> &gt; <span class="el_source">RuleController.java</span></div><h1>RuleController.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import by.technosoft.bonus.service.admin.RuleAdminService;
+import by.technosoft.bonus.service.query.RuleQueryService;
+import by.technosoft.bonus.web.dto.RuleDto;
+import by.technosoft.bonus.web.dto.RuleRequest;
+import by.technosoft.bonus.web.dto.RuleSaveResultDto;
+import by.technosoft.bonus.web.mapper.RuleMapper;
+import by.technosoft.bonus.web.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+/** Правила начисления (UC8): чтение — запросы, изменение — команды (разные сервисы, SRP). */
+@RestController
+@RequestMapping(ApiPaths.V1 + &quot;/rules&quot;)
+@Tag(name = &quot;Правила начисления&quot;, description = &quot;UC8 «Настройка правил начисления»&quot;)
+public class RuleController {
+
+    private final RuleQueryService ruleQueryService;
+    private final RuleAdminService ruleAdminService;
+    private final RuleMapper mapper;
+
+<span class="fc" id="L38">    public RuleController(RuleQueryService ruleQueryService, RuleAdminService ruleAdminService, RuleMapper mapper) {</span>
+<span class="fc" id="L39">        this.ruleQueryService = ruleQueryService;</span>
+<span class="fc" id="L40">        this.ruleAdminService = ruleAdminService;</span>
+<span class="fc" id="L41">        this.mapper = mapper;</span>
+<span class="fc" id="L42">    }</span>
+
+    @GetMapping
+    @PreAuthorize(Roles.MANAGER_OR_HR)
+    @Operation(summary = &quot;Правила&quot;, description = &quot;Последние версии правил; HR редактирует, руководитель выбирает в мастере начисления.&quot;)
+    public List&lt;RuleDto&gt; list() {
+<span class="fc" id="L48">        return ruleQueryService.list().stream().map(mapper::toDto).toList();</span>
+    }
+
+    @PostMapping
+    @PreAuthorize(Roles.HR)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = &quot;Создать правило&quot;, description = &quot;Действует сразу. 409 RULE_EXISTS — для показателя уже есть правило.&quot;)
+    public RuleSaveResultDto create(@AuthenticationPrincipal AuthenticatedUser me,
+                                    @Valid @RequestBody RuleRequest request) {
+<span class="fc" id="L57">        return mapper.toDto(ruleAdminService.create(me.userId(), mapper.toCommand(request)));</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    @PreAuthorize(Roles.HR)
+    @Operation(summary = &quot;Изменить правило&quot;, description = &quot;Правило, применённое в текущем периоде, сохраняется новой &quot;
+            + &quot;версией с начала следующего периода (deferred = true).&quot;)
+    public RuleSaveResultDto update(@AuthenticationPrincipal AuthenticatedUser me, @PathVariable Long id,
+                                    @Valid @RequestBody RuleRequest request) {
+<span class="nc" id="L66">        return mapper.toDto(ruleAdminService.update(me.userId(), id, mapper.toCommand(request)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

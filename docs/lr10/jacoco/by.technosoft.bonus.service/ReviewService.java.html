@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReviewService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">ReviewService.java</span></div><h1>ReviewService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationReview;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.ReviewDecision;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.repository.OperationReviewRepository;
+import by.technosoft.bonus.service.dto.OperationView;
+import by.technosoft.bonus.service.event.OperationAction;
+import by.technosoft.bonus.service.event.OperationRegisteredEvent;
+import by.technosoft.bonus.service.exception.AccountBlockedException;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.InsufficientBalanceException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import by.technosoft.bonus.service.exception.OperationStateException;
+
+/**
+ * Контроль финансового отдела: подтверждение и блокировка операций,
+ * ушедших на согласование (превышение лимита UC5, отрицательный баланс UC7).
+ */
+@Service
+public class ReviewService {
+
+    private static final int COMMENT_LENGTH = 300;
+
+    private final AccessPolicy accessPolicy;
+    private final OperationRepository operationRepository;
+    private final BonusAccountRepository accountRepository;
+    private final OperationReviewRepository reviewRepository;
+    private final ApplicationEventPublisher events;
+    private final Clock clock;
+
+    public ReviewService(AccessPolicy accessPolicy,
+                         OperationRepository operationRepository,
+                         BonusAccountRepository accountRepository,
+                         OperationReviewRepository reviewRepository,
+                         ApplicationEventPublisher events,
+<span class="fc" id="L52">                         Clock clock) {</span>
+<span class="fc" id="L53">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L54">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L55">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L56">        this.reviewRepository = reviewRepository;</span>
+<span class="fc" id="L57">        this.events = events;</span>
+<span class="fc" id="L58">        this.clock = clock;</span>
+<span class="fc" id="L59">    }</span>
+
+    /** Контроль финотдела: очередь операций на согласовании, старые сверху. */
+    @Transactional(readOnly = true)
+    public List&lt;OperationView&gt; pendingQueue(Long reviewerUserId) {
+<span class="fc" id="L64">        AppUser reviewer = accessPolicy.requireActiveUser(reviewerUserId);</span>
+<span class="fc" id="L65">        accessPolicy.requireRole(reviewer, RoleCode.FINANCE);</span>
+<span class="fc" id="L66">        return operationRepository.findByStatusOrderByCreatedAtAsc(OperationStatus.PENDING).stream()</span>
+<span class="fc" id="L67">                .map(OperationView::of)</span>
+<span class="fc" id="L68">                .toList();</span>
+    }
+
+    /**
+     * Контроль финотдела, «Подтвердить»: только операции «pending».
+     * Начисление → «accrued» и рост баланса; корректировка → «corrected» (отмена → «cancelled»),
+     * исходная операция → «cancelled», баланс меняется на разницу сумм. Решение пишется в operation_review.
+     */
+    @Transactional
+    public OperationView approve(Long operationId, Long reviewerUserId, String comment) {
+<span class="fc" id="L78">        AppUser reviewer = accessPolicy.requireActiveUser(reviewerUserId);</span>
+<span class="fc" id="L79">        accessPolicy.requireRole(reviewer, RoleCode.FINANCE);</span>
+<span class="fc" id="L80">        Operation op = lockPending(operationId, &quot;Подтвердить&quot;);</span>
+
+<span class="fc" id="L82">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (op.getType() == OperationType.CORRECTION) {</span>
+<span class="fc" id="L84">            Operation original = operationRepository.lockById(op.getCorrects().getId())</span>
+<span class="pc" id="L85">                    .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Корректируемая операция не найдена.&quot;));</span>
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">            if (original.getStatus() != OperationStatus.ACCRUED &amp;&amp; original.getStatus() != OperationStatus.CORRECTED) {</span>
+<span class="fc" id="L87">                throw new OperationStateException(&quot;Исходная операция &quot; + original.getNumber()</span>
+                        + &quot; уже изменена — заблокируйте корректировку.&quot;);
+            }
+<span class="fc" id="L90">            BonusAccount account = lockActiveAccount(op);</span>
+<span class="fc" id="L91">            int delta = op.correctionDelta();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (account.getBalance() + delta &lt; 0) {</span>
+<span class="fc" id="L93">                throw new InsufficientBalanceException(account.getBalance(), -delta,</span>
+<span class="fc" id="L94">                        &quot;Подтверждение невозможно: баланс станет &quot; + PointsFormat.format(account.getBalance() + delta)</span>
+                                + &quot;. Заблокируйте корректировку или дождитесь пополнения счёта.&quot;);
+            }
+<span class="fc" id="L97">            original.transitionTo(OperationStatus.CANCELLED);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">            op.transitionTo(op.isCancellationRequest() ? OperationStatus.CANCELLED : OperationStatus.CORRECTED);</span>
+<span class="fc" id="L99">            account.applyDelta(delta, now);</span>
+<span class="fc" id="L100">        } else {</span>
+<span class="fc" id="L101">            BonusAccount account = lockActiveAccount(op);</span>
+<span class="fc" id="L102">            op.transitionTo(OperationStatus.ACCRUED);</span>
+<span class="fc" id="L103">            account.applyDelta(op.getAmount(), now);</span>
+        }
+<span class="fc" id="L105">        String trimmed = normalizeComment(comment);</span>
+<span class="fc" id="L106">        reviewRepository.save(new OperationReview(op, reviewer, ReviewDecision.APPROVED, trimmed, now));</span>
+<span class="fc" id="L107">        events.publishEvent(OperationRegisteredEvent.of(OperationAction.APPROVAL, op, reviewer, trimmed));</span>
+<span class="fc" id="L108">        return OperationView.of(op);</span>
+    }
+
+    /**
+     * Контроль финотдела, «Заблокировать»: только операции «pending» → «blocked»,
+     * баланс не меняется, причина обязательна (её увидит сотрудник). Решение пишется в operation_review.
+     */
+    @Transactional
+    public OperationView block(Long operationId, Long reviewerUserId, String comment) {
+<span class="fc" id="L117">        AppUser reviewer = accessPolicy.requireActiveUser(reviewerUserId);</span>
+<span class="fc" id="L118">        accessPolicy.requireRole(reviewer, RoleCode.FINANCE);</span>
+<span class="fc" id="L119">        String reason = normalizeComment(comment);</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        if (reason == null) {</span>
+<span class="fc" id="L121">            throw new DomainValidationException(&quot;Укажите причину блокировки — её увидит сотрудник.&quot;);</span>
+        }
+<span class="fc" id="L123">        Operation op = lockPending(operationId, &quot;Заблокировать&quot;);</span>
+<span class="fc" id="L124">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc" id="L125">        op.transitionTo(OperationStatus.BLOCKED);</span>
+<span class="fc" id="L126">        reviewRepository.save(new OperationReview(op, reviewer, ReviewDecision.BLOCKED, reason, now));</span>
+<span class="fc" id="L127">        events.publishEvent(OperationRegisteredEvent.of(OperationAction.BLOCKING, op, reviewer, reason));</span>
+<span class="fc" id="L128">        return OperationView.of(op);</span>
+    }
+
+    /** Пустой комментарий — {@code null}; длина ограничена схемой (300 символов). */
+    private static String normalizeComment(String comment) {
+<span class="fc bfc" id="L133" title="All 4 branches covered.">        if (comment == null || comment.isBlank()) {</span>
+<span class="fc" id="L134">            return null;</span>
+        }
+<span class="fc" id="L136">        String trimmed = comment.trim();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (trimmed.length() &gt; COMMENT_LENGTH) {</span>
+<span class="fc" id="L138">            throw new DomainValidationException(&quot;Комментарий длиннее &quot; + COMMENT_LENGTH + &quot; символов.&quot;);</span>
+        }
+<span class="fc" id="L140">        return trimmed;</span>
+    }
+
+    private Operation lockPending(Long operationId, String action) {
+<span class="fc" id="L144">        Operation op = operationRepository.lockById(operationId)</span>
+<span class="pc" id="L145">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Операция не найдена. Обновите очередь.&quot;));</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (op.getStatus() != OperationStatus.PENDING) {</span>
+<span class="fc" id="L147">            throw new OperationStateException(action + &quot; можно только операцию на согласовании; статус &quot;</span>
+<span class="fc" id="L148">                    + op.getNumber() + &quot; — «&quot; + op.getStatus().dbValue() + &quot;».&quot;);</span>
+        }
+<span class="fc" id="L150">        return op;</span>
+    }
+
+    private BonusAccount lockActiveAccount(Operation op) {
+<span class="fc" id="L154">        BonusAccount account = accountRepository.lockById(op.getAccount().getId())</span>
+<span class="pc" id="L155">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Счёт операции не найден.&quot;));</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (!account.isActive()) {</span>
+<span class="fc" id="L157">            throw new AccountBlockedException(&quot;Счёт сотрудника заблокирован: подтверждение невозможно.&quot;);</span>
+        }
+<span class="fc" id="L159">        return account;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">DirectoryMapper.java</span></div><h1>DirectoryMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import static by.technosoft.bonus.web.mapper.ApiValues.code;
+import static by.technosoft.bonus.web.mapper.ApiValues.id;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.AccountStatus;
+import by.technosoft.bonus.domain.Department;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.Program;
+import by.technosoft.bonus.service.query.EmployeeQueryService.EmployeeRow;
+import by.technosoft.bonus.service.query.EmployeeQueryService.TeamMemberRow;
+import by.technosoft.bonus.web.dto.DepartmentDto;
+import by.technosoft.bonus.web.dto.EmployeeDto;
+import by.technosoft.bonus.web.dto.ProgramDto;
+import by.technosoft.bonus.web.dto.TeamMemberDto;
+
+/** Справочники → JSON: подразделения, сотрудники, команда, программы мотивации. */
+@Component
+<span class="fc" id="L21">public class DirectoryMapper {</span>
+
+    public DepartmentDto toDto(Department department) {
+<span class="nc" id="L24">        return new DepartmentDto(id(department.getId()), department.getName(),</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">                department.getHead() == null ? null : id(department.getHead().getId()));</span>
+    }
+
+    public ProgramDto toDto(Program program) {
+<span class="nc" id="L29">        return new ProgramDto(id(program.getId()), program.getName(), code(program.getCategory()),</span>
+<span class="nc" id="L30">                program.getDescription(), program.getCost(), program.isActive(), program.getInactiveReason());</span>
+    }
+
+    public EmployeeDto toDto(EmployeeRow row) {
+<span class="nc" id="L34">        Employee e = row.employee();</span>
+<span class="nc" id="L35">        return new EmployeeDto(id(e.getId()), e.getFullName(), e.getEmail(), e.getPosition(),</span>
+<span class="nc" id="L36">                id(e.getDepartment().getId()), managerId(e), e.getHiredAt(), row.kpiCompletion());</span>
+    }
+
+    public TeamMemberDto toDto(TeamMemberRow row) {
+<span class="nc" id="L40">        Employee e = row.employee();</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        boolean hasAccount = row.account() != null;</span>
+<span class="nc" id="L42">        return new TeamMemberDto(id(e.getId()), e.getFullName(), e.getEmail(), e.getPosition(),</span>
+<span class="nc" id="L43">                id(e.getDepartment().getId()), managerId(e), e.getHiredAt(), row.kpiCompletion(),</span>
+<span class="nc" id="L44">                e.getDepartment().getName(),</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                hasAccount ? row.account().getBalance() : 0,</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">                code(hasAccount ? row.account().getStatus() : AccountStatus.BLOCKED),</span>
+<span class="nc" id="L47">                row.accruedThisMonth());</span>
+    }
+
+    private static String managerId(Employee e) {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        return e.getManager() == null ? null : id(e.getManager().getId());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

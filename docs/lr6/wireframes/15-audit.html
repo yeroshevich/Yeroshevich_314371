@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Журнал аудита — макет TechnoSoft Bonus</title>
+<link rel="stylesheet" href="wf.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sider">
+    <div class="logo"><i class="x" style="width:28px;height:28px"></i>TechnoSoft Bonus</div>
+    <nav class="menu"><div class="mi"><i class="ico"></i>Пользователи</div><div class="mi"><i class="ico"></i>Интеграции</div><div class="mi on"><i class="ico"></i>Журнал аудита</div></nav>
+    <div class="sfoot"><span class="lbl">Роль: Администратор</span><span class="fx"><i class="ico"></i>Выйти</span></div>
+  </aside>
+  <header class="hdr">
+    <span class="crumb">Администрирование / <b>Журнал аудита</b></span>
+    <span class="sp"></span>
+    <span class="bell" title="Уведомления"><i></i><b>3</b></span>
+    <span class="prof"><i class="ava"></i><span>Сидоров П. Н.<small>Администратор</small></span><span class="mut">▾</span></span>
+  </header>
+  <main class="main">
+<div class="ph"><h1>Журнал аудита</h1><span class="sp"></span><span class="btn">Выгрузить в CSV</span></div>
+<div class="box f fx" style="align-items:flex-end;gap:16px;margin-bottom:16px">
+  <div class="field" style="width:250px"><label>Период</label><div class="inp"><i class="ico cal"></i><span class="v">24.11.2026 – 25.11.2026</span></div></div>
+  <div class="field" style="width:230px"><label>Пользователь</label><div class="inp ph-t"><i class="ico srch"></i><span class="v">ФИО или email</span></div></div>
+  <div class="field" style="width:200px"><label>Действие</label><div class="inp sel"><span class="v">Все действия</span></div></div>
+  <div class="field" style="width:180px"><label>Объект</label><div class="inp sel"><span class="v">Все объекты</span></div></div>
+  <span class="btn">Показать</span><span class="btn d">Сбросить</span>
+</div>
+<table class="t" ><thead><tr><th class="">Дата и время</th><th class="">Пользователь</th><th class="">Роль</th><th class="">Действие</th><th class="">Объект</th><th class="">Что изменилось</th><th class="">IP-адрес</th></tr></thead><tbody><tr class=""><td class="">25.11.2026 10:42:15</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">HR</td><td class="">Изменение правила</td><td class="">Правило №12</td><td class="">вес 0,3 → 0,4</td><td class="">10.0.12.40</td></tr><tr class=""><td class="">25.11.2026 10:31:02</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Руководитель</td><td class="">Ручное начисление</td><td class="">Операция №10482</td><td class="">+1 200 Б, 1 сотрудник</td><td class="">10.0.12.41</td></tr><tr class=""><td class="">25.11.2026 10:02:47</td><td class=""><span class="mut">—</span></td><td class="">Система</td><td class="">Ошибка интеграции</td><td class="">ERP</td><td class="">таймаут 10 с, отложено</td><td class="">—</td></tr><tr class=""><td class="">25.11.2026 09:58:30</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Финансовый отдел</td><td class="">Блокировка начисления</td><td class="">Операция №10455</td><td class="">превышен лимит</td><td class="">10.0.12.43</td></tr><tr class=""><td class="">25.11.2026 09:15:00</td><td class=""><span class="mut">—</span></td><td class="">Система</td><td class="">Синхронизация</td><td class="">HRIS</td><td class="">обновлено 14 записей</td><td class="">—</td></tr><tr class=""><td class="">24.11.2026 18:20:11</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Администратор</td><td class="">Смена роли</td><td class="">Пользователь</td><td class="">Сотрудник → Руководитель</td><td class="">10.0.12.45</td></tr><tr class=""><td class="">24.11.2026 17:44:09</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">HR</td><td class="">Корректировка</td><td class="">Операция №10471</td><td class="">−200 Б</td><td class="">10.0.12.46</td></tr><tr class=""><td class="">24.11.2026 16:03:51</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Сотрудник</td><td class="">Списание</td><td class="">Операция №10479</td><td class="">−3 000 Б, программа</td><td class="">10.0.12.47</td></tr><tr class=""><td class="">24.11.2026 15:12:38</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Администратор</td><td class="">Вход в систему</td><td class="">Сессия</td><td class="">успешно</td><td class="">10.0.12.48</td></tr><tr class=""><td class="">24.11.2026 14:55:20</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">HR</td><td class="">Создание кампании</td><td class="">Кампания №9</td><td class="">черновик</td><td class="">10.0.12.49</td></tr></tbody></table>
+<div class="pager"><span class="nb mut">Всего 18 406 записей · хранятся 3 года</span><span class="nb sp"></span><span>‹</span><span class="on">1</span><span class="">2</span><span class="">3</span><span class="">…</span><span class="">1841</span><span>›</span><span class="nb"></span><div class="inp sel" style="height:32px"><span class="v">10 / стр.</span></div></div>
+  </main>
+</div>
+
+</body>
+</html>

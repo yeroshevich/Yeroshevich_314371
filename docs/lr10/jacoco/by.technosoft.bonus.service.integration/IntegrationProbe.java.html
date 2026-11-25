@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationProbe.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.integration</a> &gt; <span class="el_source">IntegrationProbe.java</span></div><h1>IntegrationProbe.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.integration;
+
+import by.technosoft.bonus.domain.Integration;
+
+/**
+ * Порт проверки соединения с внешней системой (UC13). {@link by.technosoft.bonus.service.admin.IntegrationAdminService}
+ * зависит только от этого интерфейса; реальный HTTP-клиент подключается новой реализацией
+ * без изменения сервиса (OCP, DIP).
+ */
+@FunctionalInterface
+public interface IntegrationProbe {
+
+    /**
+     * @param integration подключение (вид и название системы)
+     * @param url         проверяемый адрес
+     * @param apiKey      проверяемый ключ API (открытым текстом, не сохраняется)
+     */
+    ProbeResult check(Integration integration, String url, String apiKey);
+
+    /**
+     * Итог проверки.
+     *
+     * @param latencyMs время отклика, мс; {@code null} — соединение не установлено
+     */
+<span class="fc" id="L25">    record ProbeResult(boolean ok, String message, Integer latencyMs) {</span>
+
+        public static ProbeResult success(int latencyMs) {
+<span class="fc" id="L28">            return new ProbeResult(true, &quot;Соединение установлено&quot;, latencyMs);</span>
+        }
+
+        public static ProbeResult failure(String message) {
+<span class="fc" id="L32">            return new ProbeResult(false, message, null);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

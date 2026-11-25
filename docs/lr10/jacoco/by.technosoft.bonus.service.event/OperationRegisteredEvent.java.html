@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationRegisteredEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.event</a> &gt; <span class="el_source">OperationRegisteredEvent.java</span></div><h1>OperationRegisteredEvent.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.event;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationStatus;
+
+/**
+ * Доменное событие (паттерн Observer): с операцией выполнено значимое действие.
+ * Неизменяемый снимок без ссылок на JPA-сущности — его безопасно обрабатывать после коммита.
+ *
+ * @param action         что произошло
+ * @param operationId    операция
+ * @param operationNumber номер «ОП-000123»
+ * @param employeeId     владелец счёта
+ * @param actorUserId    инициатор; {@code null} — система
+ * @param amount         сумма операции
+ * @param originalAmount сумма до корректировки (UC7)
+ * @param status         статус после действия
+ * @param reason         причина операции
+ * @param comment        комментарий (решение финотдела, превышение лимита и т. п.)
+ */
+<span class="fc" id="L22">public record OperationRegisteredEvent(</span>
+        OperationAction action,
+        Long operationId,
+        String operationNumber,
+        Long employeeId,
+        Long actorUserId,
+        int amount,
+        Integer originalAmount,
+        OperationStatus status,
+        String reason,
+        String comment) {
+
+    /** Снимок события по операции; вызывать внутри транзакции. */
+    public static OperationRegisteredEvent of(OperationAction action, Operation op, AppUser actor, String comment) {
+<span class="fc" id="L36">        return new OperationRegisteredEvent(</span>
+                action,
+<span class="fc" id="L38">                op.getId(),</span>
+<span class="fc" id="L39">                op.getNumber(),</span>
+<span class="fc" id="L40">                op.getAccount().getEmployee().getId(),</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">                actor == null ? null : actor.getId(),</span>
+<span class="fc" id="L42">                op.getAmount(),</span>
+<span class="fc" id="L43">                op.getOriginalAmount(),</span>
+<span class="fc" id="L44">                op.getStatus(),</span>
+<span class="fc" id="L45">                op.getReason(),</span>
+                comment);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

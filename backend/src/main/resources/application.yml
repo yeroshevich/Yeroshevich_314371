@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: technosoft-bonus
+  autoconfigure:
+    # Пользователи — в БД (app_user), аутентификация — JWT; учётная запись Spring Boot по умолчанию не нужна.
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tpsis_bonus_app
+    username: valeriyyerashevich
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # схема создаётся только Flyway; Hibernate сверяет маппинг
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50          # пакетная вставка операций при массовом начислении (PERF-3)
+        order_inserts: true
+        order_updates: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    default-property-inclusion: non_null   # необязательные поля DTO (originalAmount?, comment?) не передаются
+    serialization:
+      write-dates-as-timestamps: false     # даты — строки ISO 8601 (DATA-3)
+  mvc:
+    problemdetails:
+      enabled: false                       # единый формат ошибок задаёт web.error.GlobalExceptionHandler
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packages-to-scan: by.technosoft.bonus.web.controller
+  default-produces-media-type: application/json
+
+bonus:
+  accrual-limit: 1000             # лимит разового начисления на сотрудника (UC5)
+  event-batch-size: 100           # размер пакета необработанных событий (UC4)
+  zone: Europe/Minsk              # часовой пояс бизнес-дат (кампании, периоды)
+  event-scheduler:
+    enabled: false                # периодический запуск processPending(); включить: BONUS_EVENT_SCHEDULER_ENABLED=true
+    delay: PT1M
+  security:
+    jwt:
+      # Секрет подписи HS256 (не короче 32 байт). В эксплуатации задаётся переменной окружения BONUS_JWT_SECRET.
+      secret: ${BONUS_JWT_SECRET:technosoft-bonus-dev-secret-change-me-2026-hs256}
+      ttl: PT8H                   # срок действия токена — рабочая смена
+      issuer: technosoft-bonus
+    # Ключ шифрования API-ключей интеграций (AES-256-GCM, base64 32 байт); переменная BONUS_SECRET_KEY.
+    secret-key: ${BONUS_SECRET_KEY:dGVjaG5vc29mdC1ib251cy1kZXYta2V5LTMyLWJ5dGU=}
+    initial-password: demo        # временный пароль новых учётных записей (UC12)
+    cors-origins: http://localhost:5173,http://localhost:4173
+
+logging:
+  level:
+    by.technosoft.bonus: INFO

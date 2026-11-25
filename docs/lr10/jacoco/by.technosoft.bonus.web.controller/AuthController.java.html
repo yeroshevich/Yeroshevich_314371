@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.service.auth.AuthenticationService;
+import by.technosoft.bonus.web.dto.AuthSessionDto;
+import by.technosoft.bonus.web.dto.LoginRequest;
+import by.technosoft.bonus.web.mapper.UserMapper;
+import by.technosoft.bonus.web.security.AuthenticatedUser;
+import by.technosoft.bonus.web.security.JwtAuthenticationFilter;
+import by.technosoft.bonus.web.security.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
+/** Аутентификация (SEC-1): вход, профиль по токену, выход. */
+@RestController
+@RequestMapping(ApiPaths.V1 + &quot;/auth&quot;)
+@Tag(name = &quot;Аутентификация&quot;, description = &quot;SEC-1: вход по email и паролю, JWT HS256 (8 ч)&quot;)
+public class AuthController {
+
+    private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
+    private final UserMapper userMapper;
+
+    public AuthController(AuthenticationService authenticationService, TokenService tokenService,
+<span class="fc" id="L37">                          UserMapper userMapper) {</span>
+<span class="fc" id="L38">        this.authenticationService = authenticationService;</span>
+<span class="fc" id="L39">        this.tokenService = tokenService;</span>
+<span class="fc" id="L40">        this.userMapper = userMapper;</span>
+<span class="fc" id="L41">    }</span>
+
+    @PostMapping(&quot;/login&quot;)
+    @SecurityRequirements
+    @Operation(summary = &quot;Вход&quot;, description = &quot;Проверка email и пароля (BCrypt). 401 BAD_CREDENTIALS, 403 USER_BLOCKED.&quot;)
+    public AuthSessionDto login(@Valid @RequestBody LoginRequest request) {
+<span class="fc" id="L47">        AppUser user = authenticationService.login(request.email(), request.password());</span>
+<span class="fc" id="L48">        return new AuthSessionDto(tokenService.issue(user).value(), userMapper.toDto(user));</span>
+    }
+
+    @GetMapping(&quot;/me&quot;)
+    @Operation(summary = &quot;Профиль по токену&quot;, description = &quot;Восстановление сессии клиента после перезагрузки вкладки.&quot;)
+    public AuthSessionDto me(@AuthenticationPrincipal AuthenticatedUser me, HttpServletRequest request) {
+<span class="fc" id="L54">        String token = JwtAuthenticationFilter.bearerToken(request).orElseThrow();</span>
+<span class="fc" id="L55">        return new AuthSessionDto(token, userMapper.toDto(authenticationService.activeUser(me.userId())));</span>
+    }
+
+    @PostMapping(&quot;/logout&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = &quot;Выход&quot;, description = &quot;Токен без состояния удаляет клиент; сервер фиксирует выход в аудите.&quot;)
+    public void logout(@AuthenticationPrincipal AuthenticatedUser me) {
+<span class="nc" id="L62">        authenticationService.logout(me.userId());</span>
+<span class="nc" id="L63">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

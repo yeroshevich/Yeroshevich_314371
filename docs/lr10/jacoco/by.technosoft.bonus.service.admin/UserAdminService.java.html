@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserAdminService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.admin</a> &gt; <span class="el_source">UserAdminService.java</span></div><h1>UserAdminService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.admin;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.Map;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.config.SecurityProperties;
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Department;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.domain.UserStatus;
+import by.technosoft.bonus.repository.AppUserRepository;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.DepartmentRepository;
+import by.technosoft.bonus.repository.EmployeeRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+import by.technosoft.bonus.service.audit.AuditTrail;
+import by.technosoft.bonus.service.exception.ConflictException;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.DuplicateEmailException;
+import by.technosoft.bonus.service.query.UserQueryService;
+
+/**
+ * Управление учётными записями администратором (UC12): создание (сотрудник + бонусный счёт +
+ * учётная запись с временным паролем), изменение данных и роли, блокировка и разблокировка.
+ * Email уникален (альт. поток UC12 — {@link DuplicateEmailException}).
+ */
+@Service
+public class UserAdminService {
+
+    /**
+     * Данные пользователя.
+     *
+     * @param departmentId подразделение; руководителем нового сотрудника становится его глава
+     */
+<span class="fc" id="L43">    public record UserCommand(String fullName, String email, Long departmentId, String position, RoleCode role) {</span>
+    }
+
+    private final AccessPolicy accessPolicy;
+    private final AppUserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final BonusAccountRepository accountRepository;
+    private final UserQueryService userQueryService;
+    private final PasswordEncoder passwordEncoder;
+    private final SecurityProperties securityProperties;
+    private final AuditTrail auditTrail;
+    private final Clock clock;
+
+    public UserAdminService(AccessPolicy accessPolicy,
+                            AppUserRepository userRepository,
+                            EmployeeRepository employeeRepository,
+                            DepartmentRepository departmentRepository,
+                            BonusAccountRepository accountRepository,
+                            UserQueryService userQueryService,
+                            PasswordEncoder passwordEncoder,
+                            SecurityProperties securityProperties,
+                            AuditTrail auditTrail,
+<span class="fc" id="L66">                            Clock clock) {</span>
+<span class="fc" id="L67">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L68">        this.userRepository = userRepository;</span>
+<span class="fc" id="L69">        this.employeeRepository = employeeRepository;</span>
+<span class="fc" id="L70">        this.departmentRepository = departmentRepository;</span>
+<span class="fc" id="L71">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L72">        this.userQueryService = userQueryService;</span>
+<span class="fc" id="L73">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L74">        this.securityProperties = securityProperties;</span>
+<span class="fc" id="L75">        this.auditTrail = auditTrail;</span>
+<span class="fc" id="L76">        this.clock = clock;</span>
+<span class="fc" id="L77">    }</span>
+
+    /** Новый сотрудник с пустым бонусным счётом и учётной записью (временный пароль из настроек). */
+    @Transactional
+    public AppUser create(Long actorUserId, UserCommand command) {
+<span class="fc" id="L82">        requireAdmin(actorUserId);</span>
+<span class="fc" id="L83">        String email = normalizeEmail(command.email());</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (employeeRepository.existsByEmailIgnoreCase(email)) {</span>
+<span class="fc" id="L85">            throw new DuplicateEmailException(email);</span>
+        }
+<span class="fc" id="L87">        Department department = requireDepartment(command.departmentId());</span>
+<span class="fc" id="L88">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+
+<span class="fc" id="L90">        long employeeId = employeeRepository.nextId();</span>
+<span class="fc" id="L91">        employeeRepository.insert(employeeId, command.fullName().trim(), email, command.position().trim(),</span>
+<span class="fc" id="L92">                department.getId(), headOf(department, null), LocalDate.now(clock));</span>
+<span class="fc" id="L93">        accountRepository.open(employeeId, now);</span>
+<span class="fc" id="L94">        long userId = userRepository.nextId();</span>
+<span class="fc" id="L95">        userRepository.insert(userId, employeeId, command.role().dbValue(),</span>
+<span class="fc" id="L96">                passwordEncoder.encode(securityProperties.initialPassword()), now);</span>
+
+<span class="fc" id="L98">        auditTrail.record(actorUserId, &quot;Создание пользователя&quot;, &quot;app_user&quot;, userId,</span>
+<span class="fc" id="L99">                Map.of(&quot;label&quot;, command.fullName().trim(), &quot;email&quot;, email, &quot;role&quot;, command.role().dbValue()));</span>
+<span class="fc" id="L100">        return userQueryService.get(userId);</span>
+    }
+
+    /** Изменение ФИО, email, подразделения, должности и роли. */
+    @Transactional
+    public AppUser update(Long actorUserId, Long userId, UserCommand command) {
+<span class="fc" id="L106">        requireAdmin(actorUserId);</span>
+<span class="fc" id="L107">        AppUser user = userQueryService.get(userId);</span>
+<span class="fc" id="L108">        Employee employee = user.getEmployee();</span>
+<span class="fc" id="L109">        String email = normalizeEmail(command.email());</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (employeeRepository.existsByEmailIgnoreCaseAndIdNot(email, employee.getId())) {</span>
+<span class="fc" id="L111">            throw new DuplicateEmailException(email);</span>
+        }
+<span class="pc bpc" id="L113" title="1 of 4 branches missed.">        if (user.getId().equals(actorUserId) &amp;&amp; command.role() != RoleCode.ADMIN) {</span>
+<span class="fc" id="L114">            throw new ConflictException(&quot;Нельзя снять роль администратора с собственной учётной записи.&quot;);</span>
+        }
+<span class="fc" id="L116">        Department department = requireDepartment(command.departmentId());</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        Long managerId = department.getId().equals(employee.getDepartment().getId())</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">                ? (employee.getManager() == null ? null : employee.getManager().getId())</span>
+<span class="fc" id="L119">                : headOf(department, employee.getId());</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        boolean roleChanged = user.getRoleCode() != command.role();</span>
+
+<span class="fc" id="L122">        employeeRepository.update(employee.getId(), command.fullName().trim(), email, command.position().trim(),</span>
+<span class="fc" id="L123">                department.getId(), managerId);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (roleChanged) {</span>
+<span class="fc" id="L125">            userRepository.updateRole(userId, command.role().dbValue());</span>
+        }
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        auditTrail.record(actorUserId, roleChanged ? &quot;Изменение роли&quot; : &quot;Изменение пользователя&quot;, &quot;app_user&quot;, userId,</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                Map.of(&quot;label&quot;, command.fullName().trim() + (roleChanged ? &quot; → &quot; + command.role().dbValue() : &quot;&quot;)));</span>
+<span class="fc" id="L129">        return userQueryService.get(userId);</span>
+    }
+
+    /** Блокировка или разблокировка входа; повторная установка того же статуса ничего не меняет. */
+    @Transactional
+    public AppUser setStatus(Long actorUserId, Long userId, UserStatus status) {
+<span class="fc" id="L135">        requireAdmin(actorUserId);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (userId.equals(actorUserId)) {</span>
+<span class="fc" id="L137">            throw new ConflictException(&quot;Нельзя заблокировать собственную учётную запись.&quot;);</span>
+        }
+<span class="fc" id="L139">        AppUser user = userQueryService.get(userId);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (user.getStatus() != status) {</span>
+<span class="fc" id="L141">            userRepository.updateStatus(userId, status.dbValue());</span>
+<span class="fc" id="L142">            auditTrail.record(actorUserId,</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">                    status == UserStatus.BLOCKED ? &quot;Блокировка пользователя&quot; : &quot;Разблокировка пользователя&quot;,</span>
+<span class="fc" id="L144">                    &quot;app_user&quot;, userId, Map.of(&quot;label&quot;, user.getEmployee().getFullName()));</span>
+        }
+<span class="fc" id="L146">        return userQueryService.get(userId);</span>
+    }
+
+    private void requireAdmin(Long actorUserId) {
+<span class="fc" id="L150">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L151">        accessPolicy.requireRole(actor, RoleCode.ADMIN);</span>
+<span class="fc" id="L152">    }</span>
+
+    private Department requireDepartment(Long departmentId) {
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (departmentId == null) {</span>
+<span class="fc" id="L156">            throw new DomainValidationException(&quot;Выберите подразделение.&quot;);</span>
+        }
+<span class="fc" id="L158">        return departmentRepository.findById(departmentId)</span>
+<span class="fc" id="L159">                .orElseThrow(() -&gt; new DomainValidationException(&quot;Подразделение не найдено. Обновите страницу.&quot;));</span>
+    }
+
+    /** Руководитель сотрудника — глава подразделения (сам глава руководителя не имеет). */
+    private static Long headOf(Department department, Long employeeId) {
+<span class="fc" id="L164">        Employee head = department.getHead();</span>
+<span class="pc bpc" id="L165" title="2 of 4 branches missed.">        return head == null || head.getId().equals(employeeId) ? null : head.getId();</span>
+    }
+
+    private static String normalizeEmail(String email) {
+<span class="fc" id="L169">        return email.trim().toLowerCase(Locale.ROOT);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

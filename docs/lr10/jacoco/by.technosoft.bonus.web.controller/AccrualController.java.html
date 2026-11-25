@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.controller</a> &gt; <span class="el_source">AccrualController.java</span></div><h1>AccrualController.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import by.technosoft.bonus.service.AccrualService;
+import by.technosoft.bonus.service.dto.AccrualResult;
+import by.technosoft.bonus.service.dto.OperationView;
+import by.technosoft.bonus.service.query.OperationQueryService;
+import by.technosoft.bonus.web.dto.AccrualPreviewDto;
+import by.technosoft.bonus.web.dto.AccrualPreviewRequestDto;
+import by.technosoft.bonus.web.dto.AccrualRequestDto;
+import by.technosoft.bonus.web.dto.AccrualResultDto;
+import by.technosoft.bonus.web.mapper.AccrualMapper;
+import by.technosoft.bonus.web.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+/** Ручное начисление баллов (UC5) с расчётом (UC6). */
+@RestController
+@RequestMapping(ApiPaths.V1 + &quot;/accruals&quot;)
+@PreAuthorize(Roles.MANAGER_OR_HR)
+@Tag(name = &quot;Начисления&quot;, description = &quot;UC5 «Ручное начисление», UC6 «Расчёт»&quot;)
+public class AccrualController {
+
+    private final AccrualService accrualService;
+    private final OperationQueryService operationQueryService;
+    private final AccrualMapper mapper;
+
+    public AccrualController(AccrualService accrualService, OperationQueryService operationQueryService,
+<span class="fc" id="L38">                             AccrualMapper mapper) {</span>
+<span class="fc" id="L39">        this.accrualService = accrualService;</span>
+<span class="fc" id="L40">        this.operationQueryService = operationQueryService;</span>
+<span class="fc" id="L41">        this.mapper = mapper;</span>
+<span class="fc" id="L42">    }</span>
+
+    @PostMapping(&quot;/preview&quot;)
+    @Operation(summary = &quot;Предварительный расчёт&quot;, description = &quot;Сумма × коэффициент кампании по каждому сотруднику &quot;
+            + &quot;и признак превышения лимита. Ничего не сохраняет; причина необязательна.&quot;)
+    public AccrualPreviewDto preview(@AuthenticationPrincipal AuthenticatedUser me,
+                                     @Valid @RequestBody AccrualPreviewRequestDto request) {
+<span class="fc" id="L49">        return mapper.toDto(accrualService.preview(me.userId(), mapper.toCommand(request)));</span>
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = &quot;Начислить&quot;, description = &quot;Итог ≤ лимита — «accrued», выше лимита — «pending» на согласование &quot;
+            + &quot;финотдела. Руководитель — только своей команде (403). Заблокированный счёт — 423, начисление не проводится.&quot;)
+    public AccrualResultDto create(@AuthenticationPrincipal AuthenticatedUser me,
+                                   @Valid @RequestBody AccrualRequestDto request) {
+<span class="fc" id="L58">        AccrualResult result = accrualService.create(me.userId(), mapper.toCommand(request));</span>
+<span class="fc" id="L59">        return mapper.toDto(result,</span>
+<span class="fc" id="L60">                operationQueryService.getAll(result.operations().stream().map(OperationView::id).toList()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

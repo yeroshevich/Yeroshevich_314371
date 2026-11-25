@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">AccrualMapper.java</span></div><h1>AccrualMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import static by.technosoft.bonus.web.mapper.ApiValues.id;
+
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.OperationBasis;
+import by.technosoft.bonus.service.dto.AccrualPreview;
+import by.technosoft.bonus.service.dto.AccrualRequest;
+import by.technosoft.bonus.service.dto.AccrualResult;
+import by.technosoft.bonus.service.query.OperationQueryService.OperationEntry;
+import by.technosoft.bonus.web.dto.AccrualPreviewDto;
+import by.technosoft.bonus.web.dto.AccrualPreviewLineDto;
+import by.technosoft.bonus.web.dto.AccrualPreviewRequestDto;
+import by.technosoft.bonus.web.dto.AccrualRequestDto;
+import by.technosoft.bonus.web.dto.AccrualResultDto;
+
+/** Ручное начисление (UC5, UC6): JSON → команда сервиса, результат → JSON. */
+@Component
+public class AccrualMapper {
+
+    private final OperationMapper operationMapper;
+
+<span class="fc" id="L26">    public AccrualMapper(OperationMapper operationMapper) {</span>
+<span class="fc" id="L27">        this.operationMapper = operationMapper;</span>
+<span class="fc" id="L28">    }</span>
+
+    /** Причина-заглушка для расчёта без сохранения: сервис проверяет заполненность причины. */
+    static final String PREVIEW_REASON = &quot;Предварительный расчёт&quot;;
+
+    /** Расчёт без сохранения: пустая причина допустима. */
+    public AccrualRequest toCommand(AccrualPreviewRequestDto dto) {
+<span class="pc bpc" id="L35" title="2 of 4 branches missed.">        String reason = dto.reason() == null || dto.reason().isBlank() ? PREVIEW_REASON : dto.reason();</span>
+<span class="fc" id="L36">        return new AccrualRequest(dto.employeeIds(), dto.amount(), ApiValues.parse(OperationBasis.class, dto.basis()),</span>
+<span class="fc" id="L37">                reason, dto.ruleId(), dto.campaignId());</span>
+    }
+
+    public AccrualRequest toCommand(AccrualRequestDto dto) {
+<span class="fc" id="L41">        return new AccrualRequest(dto.employeeIds(), dto.amount(), ApiValues.parse(OperationBasis.class, dto.basis()),</span>
+<span class="fc" id="L42">                dto.reason(), dto.ruleId(), dto.campaignId());</span>
+    }
+
+    public AccrualPreviewDto toDto(AccrualPreview preview) {
+<span class="fc" id="L46">        List&lt;AccrualPreviewLineDto&gt; lines = preview.lines().stream()</span>
+<span class="fc" id="L47">                .map(l -&gt; new AccrualPreviewLineDto(id(l.employeeId()), l.employeeName(), l.baseAmount(),</span>
+<span class="fc" id="L48">                        ApiValues.number(l.coefficient()), l.total(), l.needsApproval()))</span>
+<span class="fc" id="L49">                .toList();</span>
+<span class="fc" id="L50">        return new AccrualPreviewDto(lines, preview.total(), preview.limit(), preview.approvalCount());</span>
+    }
+
+    /** @param operations созданные операции с пояснениями (в порядке результата) */
+    public AccrualResultDto toDto(AccrualResult result, List&lt;OperationEntry&gt; operations) {
+<span class="fc" id="L55">        return new AccrualResultDto(operationMapper.toDtos(operations), result.accruedCount(), result.pendingCount());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

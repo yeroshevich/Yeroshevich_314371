@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.error</a> &gt; <span class="el_source">ErrorCode.java</span></div><h1>ErrorCode.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.error;
+
+import org.springframework.http.HttpStatus;
+
+/**
+ * Перечень кодов ошибок REST API (поле {@code code} ответа об ошибке) с HTTP-статусом.
+ * Доменные коды совпадают с {@code BonusDomainException.getCode()}; технические задаёт REST-слой.
+ * Единый источник для обработчика ошибок, фильтров безопасности и документации API.
+ */
+<span class="fc" id="L10">public enum ErrorCode {</span>
+
+    // ── 400: запрос не разобран ─────────────────────────────────────────────
+<span class="fc" id="L13">    MALFORMED_REQUEST(HttpStatus.BAD_REQUEST, &quot;Тело запроса не разобрано или параметр имеет неверный тип/формат&quot;),</span>
+
+    // ── 401: нет аутентификации ─────────────────────────────────────────────
+<span class="fc" id="L16">    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, &quot;Нет токена, токен неверен или срок его действия истёк&quot;),</span>
+<span class="fc" id="L17">    BAD_CREDENTIALS(HttpStatus.UNAUTHORIZED, &quot;Неверный email или пароль&quot;),</span>
+
+    // ── 403: нет прав ───────────────────────────────────────────────────────
+<span class="fc" id="L20">    ACCESS_DENIED(HttpStatus.FORBIDDEN, &quot;Роль или область ответственности не позволяет выполнить действие (SEC-3)&quot;),</span>
+<span class="fc" id="L21">    USER_BLOCKED(HttpStatus.FORBIDDEN, &quot;Учётная запись заблокирована администратором&quot;),</span>
+
+    // ── 404 / 405 ───────────────────────────────────────────────────────────
+<span class="fc" id="L24">    NOT_FOUND(HttpStatus.NOT_FOUND, &quot;Объект или адрес не найден&quot;),</span>
+<span class="fc" id="L25">    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, &quot;HTTP-метод не поддерживается для этого адреса&quot;),</span>
+
+    // ── 409: конфликт с состоянием данных ───────────────────────────────────
+<span class="fc" id="L28">    CONFLICT(HttpStatus.CONFLICT, &quot;Действие противоречит текущему состоянию данных&quot;),</span>
+<span class="fc" id="L29">    EMAIL_EXISTS(HttpStatus.CONFLICT, &quot;Пользователь с таким email уже есть (UC12)&quot;),</span>
+<span class="fc" id="L30">    RULE_EXISTS(HttpStatus.CONFLICT, &quot;Для показателя KPI уже есть правило (UC8)&quot;),</span>
+<span class="fc" id="L31">    INSUFFICIENT_FUNDS(HttpStatus.CONFLICT, &quot;Не хватает баллов на счёте (UC3, подтверждение корректировки)&quot;),</span>
+<span class="fc" id="L32">    PROGRAM_INACTIVE(HttpStatus.CONFLICT, &quot;Программа мотивации недоступна (UC3)&quot;),</span>
+<span class="fc" id="L33">    OPERATION_STATE_CONFLICT(HttpStatus.CONFLICT, &quot;Действие недопустимо в текущем статусе операции (UC7, контроль)&quot;),</span>
+<span class="fc" id="L34">    CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, &quot;Данные одновременно изменил другой пользователь — повторите действие&quot;),</span>
+
+    // ── 415 ─────────────────────────────────────────────────────────────────
+<span class="fc" id="L37">    UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, &quot;Ожидается тело application/json&quot;),</span>
+
+    // ── 422: данные не прошли проверку ──────────────────────────────────────
+<span class="fc" id="L40">    VALIDATION_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, &quot;Поля запроса не прошли проверку (Bean Validation или бизнес-правила)&quot;),</span>
+<span class="fc" id="L41">    INVALID_CALCULATION_INPUT(HttpStatus.UNPROCESSABLE_ENTITY, &quot;Некорректные входные данные расчёта бонуса (UC6)&quot;),</span>
+
+    // ── 423: счёт заблокирован ──────────────────────────────────────────────
+<span class="fc" id="L44">    ACCOUNT_BLOCKED(HttpStatus.LOCKED, &quot;Бонусный счёт заблокирован (альт. поток UC1, UC3, UC5, UC7)&quot;),</span>
+
+    // ── 500 ─────────────────────────────────────────────────────────────────
+<span class="fc" id="L47">    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Непредвиденная ошибка сервера&quot;);</span>
+
+    private final HttpStatus status;
+    private final String description;
+
+<span class="fc" id="L52">    ErrorCode(HttpStatus status, String description) {</span>
+<span class="fc" id="L53">        this.status = status;</span>
+<span class="fc" id="L54">        this.description = description;</span>
+<span class="fc" id="L55">    }</span>
+
+    public HttpStatus status() {
+<span class="fc" id="L58">        return status;</span>
+    }
+
+    public String description() {
+<span class="nc" id="L62">        return description;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

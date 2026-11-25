@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualRule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">AccrualRule.java</span></div><h1>AccrualRule.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** Правило начисления (таблица accrual_rule, UC8, BR-4). */
+@Entity
+@Table(name = &quot;accrual_rule&quot;)
+public class AccrualRule {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;name&quot;, nullable = false, length = 150)
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;kpi_id&quot;, nullable = false)
+    private Kpi kpi;
+
+    /** Вес показателя, (0; 1]. */
+    @Column(name = &quot;weight&quot;, nullable = false, precision = 3, scale = 2)
+    private BigDecimal weight;
+
+    /** Базовая сумма, к которой применяется формула, баллы. */
+    @Column(name = &quot;base_points&quot;, nullable = false)
+    private int basePoints;
+
+    @Column(name = &quot;periodicity&quot;, nullable = false, length = 10)
+    private RulePeriodicity periodicity;
+
+    /** Порог срабатывания: минимальное выполнение KPI, % (BR-5). */
+    @Column(name = &quot;threshold&quot;, nullable = false, precision = 5, scale = 2)
+    private BigDecimal threshold;
+
+    /** Дополнительные условия правила в JSONB, например {@code {&quot;roundTo&quot;: 50}}. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;params&quot;, nullable = false, columnDefinition = &quot;jsonb&quot;)
+    private String params;
+
+    @Column(name = &quot;active&quot;, nullable = false)
+    private boolean active;
+
+    /** Дата, с которой действует текущая редакция правила (альт. поток UC8). */
+    @Column(name = &quot;effective_from&quot;, nullable = false)
+    private LocalDate effectiveFrom;
+
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private OffsetDateTime updatedAt;
+
+<span class="fc" id="L66">    protected AccrualRule() {</span>
+<span class="fc" id="L67">    }</span>
+
+    public Long getId() {
+<span class="fc" id="L70">        return id;</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L74">        return name;</span>
+    }
+
+    public Kpi getKpi() {
+<span class="fc" id="L78">        return kpi;</span>
+    }
+
+    public BigDecimal getWeight() {
+<span class="fc" id="L82">        return weight;</span>
+    }
+
+    public int getBasePoints() {
+<span class="fc" id="L86">        return basePoints;</span>
+    }
+
+    public RulePeriodicity getPeriodicity() {
+<span class="fc" id="L90">        return periodicity;</span>
+    }
+
+    public BigDecimal getThreshold() {
+<span class="fc" id="L94">        return threshold;</span>
+    }
+
+    public String getParams() {
+<span class="fc" id="L98">        return params;</span>
+    }
+
+    public boolean isActive() {
+<span class="fc" id="L102">        return active;</span>
+    }
+
+    public LocalDate getEffectiveFrom() {
+<span class="fc" id="L106">        return effectiveFrom;</span>
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+<span class="fc" id="L110">        return updatedAt;</span>
+    }
+
+    /** Действует ли правило на дату {@code date}: активно и вступило в силу. */
+    public boolean isApplicableOn(LocalDate date) {
+<span class="fc bfc" id="L115" title="All 4 branches covered.">        return active &amp;&amp; !effectiveFrom.isAfter(date);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationTotals.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">OperationTotals.java</span></div><h1>OperationTotals.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import java.util.Collection;
+
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+
+/**
+ * Итоги по набору операций — единые формулы для экранов «Мой баланс», «Моя команда»,
+ * отчётов (UC10) и аналитики (UC11) (DRY).
+ */
+public final class OperationTotals {
+
+    private OperationTotals() {
+    }
+
+    /** Начислено: положительные проведённые суммы (начисления и корректировки вверх). */
+    public static int accrued(Collection&lt;Operation&gt; ops) {
+<span class="fc" id="L20">        return ops.stream()</span>
+<span class="pc bpc" id="L21" title="1 of 6 branches missed.">                .filter(o -&gt; o.getAmount() &gt; 0 &amp;&amp; o.getStatus().isSettled() &amp;&amp; o.getType() != OperationType.WRITEOFF)</span>
+<span class="fc" id="L22">                .mapToInt(Operation::getAmount)</span>
+<span class="fc" id="L23">                .sum();</span>
+    }
+
+    /** Потрачено на программы мотивации (положительное число). */
+    public static int spent(Collection&lt;Operation&gt; ops) {
+<span class="fc" id="L28">        return -ops.stream()</span>
+<span class="pc bpc" id="L29" title="1 of 4 branches missed.">                .filter(o -&gt; o.getType() == OperationType.WRITEOFF &amp;&amp; o.getStatus() == OperationStatus.WRITTEN_OFF)</span>
+<span class="fc" id="L30">                .mapToInt(Operation::getAmount)</span>
+<span class="fc" id="L31">                .sum();</span>
+    }
+
+    /** Ожидает согласования финотдела: положительные суммы в статусе pending. */
+    public static int pending(Collection&lt;Operation&gt; ops) {
+<span class="fc" id="L36">        return ops.stream()</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">                .filter(o -&gt; o.getStatus() == OperationStatus.PENDING &amp;&amp; o.getAmount() &gt; 0)</span>
+<span class="fc" id="L38">                .mapToInt(Operation::getAmount)</span>
+<span class="fc" id="L39">                .sum();</span>
+    }
+
+    /** Сумма проведённых операций — баланс по журналу (инвариант BR-6). */
+    public static int settled(Collection&lt;Operation&gt; ops) {
+<span class="fc" id="L44">        return ops.stream().filter(o -&gt; o.getStatus().isSettled()).mapToInt(Operation::getAmount).sum();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

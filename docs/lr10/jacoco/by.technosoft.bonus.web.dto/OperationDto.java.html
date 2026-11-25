@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.dto</a> &gt; <span class="el_source">OperationDto.java</span></div><h1>OperationDto.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.dto;
+
+import java.time.OffsetDateTime;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/** Операция по счёту (TS: {@code Operation}). Необязательные поля без значения не передаются. */
+@Schema(name = &quot;Operation&quot;)
+<span class="fc" id="L9">public record OperationDto(</span>
+        @Schema(example = &quot;154&quot;) String id,
+        @Schema(example = &quot;ОП-000154&quot;) String number,
+        String employeeId,
+        String employeeName,
+        String departmentId,
+        @Schema(allowableValues = {&quot;accrual&quot;, &quot;writeoff&quot;, &quot;correction&quot;}) String type,
+        @Schema(description = &quot;Сумма со знаком: «+» начисление, «−» списание&quot;, example = &quot;800&quot;) int amount,
+        @Schema(description = &quot;Сумма до корректировки (UC7)&quot;) Integer originalAmount,
+        @Schema(allowableValues = {&quot;accrued&quot;, &quot;written_off&quot;, &quot;corrected&quot;, &quot;pending&quot;, &quot;blocked&quot;, &quot;cancelled&quot;}) String status,
+        @Schema(allowableValues = {&quot;kpi&quot;, &quot;project&quot;, &quot;achievement&quot;, &quot;campaign&quot;, &quot;program&quot;, &quot;correction&quot;}) String basis,
+        String reason,
+        String ruleId,
+        String campaignId,
+        String programId,
+        OffsetDateTime createdAt,
+        @Schema(description = &quot;ФИО автора или «Система» для автоначисления&quot;) String createdBy,
+        @Schema(description = &quot;Комментарий финотдела или причина согласования&quot;) String comment,
+        @Schema(description = &quot;Финотдел пометил операцию спорной&quot;) boolean disputed) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

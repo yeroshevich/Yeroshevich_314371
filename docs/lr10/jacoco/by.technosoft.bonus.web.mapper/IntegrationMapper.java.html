@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.mapper</a> &gt; <span class="el_source">IntegrationMapper.java</span></div><h1>IntegrationMapper.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.mapper;
+
+import static by.technosoft.bonus.web.mapper.ApiValues.code;
+import static by.technosoft.bonus.web.mapper.ApiValues.id;
+
+import java.util.EnumMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.Integration;
+import by.technosoft.bonus.domain.IntegrationCheck;
+import by.technosoft.bonus.domain.IntegrationKind;
+import by.technosoft.bonus.service.admin.IntegrationAdminService.IntegrationPatch;
+import by.technosoft.bonus.service.query.IntegrationQueryService.IntegrationState;
+import by.technosoft.bonus.web.dto.IntegrationCheckDto;
+import by.technosoft.bonus.web.dto.IntegrationDto;
+import by.technosoft.bonus.web.dto.IntegrationUpdateRequest;
+
+/**
+ * Интеграция ↔ JSON (UC13). Ключ API наружу не выдаётся: вместо него — маска {@link #KEY_MASK};
+ * маска, пришедшая обратно от клиента, означает «ключ не меняли».
+ */
+@Component
+<span class="fc" id="L25">public class IntegrationMapper {</span>
+
+    public static final String KEY_MASK = &quot;••••••••&quot;;
+
+<span class="fc" id="L29">    private static final Map&lt;IntegrationKind, String&gt; DESCRIPTIONS = new EnumMap&lt;&gt;(Map.of(</span>
+            IntegrationKind.HRIS, &quot;Кадровые данные: сотрудники, подразделения, должности (DATA-2).&quot;,
+            IntegrationKind.ERP, &quot;Проекты и этапы для начислений по проектным задачам.&quot;,
+            IntegrationKind.AD, &quot;Единый вход сотрудников и синхронизация учётных записей.&quot;,
+            IntegrationKind.NOTIFICATIONS, &quot;Письма и push-уведомления о начислениях и списаниях.&quot;));
+
+    public IntegrationDto toDto(IntegrationState state) {
+<span class="fc" id="L36">        Integration i = state.integration();</span>
+<span class="fc" id="L37">        return new IntegrationDto(id(i.getId()), code(i.getKind()), i.getName(), DESCRIPTIONS.get(i.getKind()),</span>
+<span class="fc" id="L38">                i.getUrl(), KEY_MASK, i.isEnabled(), i.getLastSyncAt(),</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                state.lastCheck() == null ? null : toDto(state.lastCheck()));</span>
+    }
+
+    public IntegrationCheckDto toDto(IntegrationCheck check) {
+<span class="fc" id="L43">        return new IntegrationCheckDto(check.isOk(), check.getMessage(), check.getCheckedAt(), check.getLatencyMs());</span>
+    }
+
+    public IntegrationPatch toPatch(IntegrationUpdateRequest dto) {
+<span class="fc" id="L47">        return new IntegrationPatch(dto.url(), newKeyOrNull(dto.apiKey()), dto.enabled());</span>
+    }
+
+    /** Ключ из запроса; маска или пусто — {@code null} («использовать сохранённый»). */
+    public String newKeyOrNull(String apiKey) {
+<span class="pc bpc" id="L52" title="2 of 6 branches missed.">        return apiKey == null || apiKey.isBlank() || KEY_MASK.equals(apiKey) ? null : apiKey;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

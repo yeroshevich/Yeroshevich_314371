@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimulatedIntegrationProbe.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.integration</a> &gt; <span class="el_source">SimulatedIntegrationProbe.java</span></div><h1>SimulatedIntegrationProbe.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.integration;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.Integration;
+
+/**
+ * Проверка соединения на учебном стенде, где HRIS, ERP, AD и сервис уведомлений недоступны.
+ * Проверяет то, что проверил бы и реальный клиент до сетевого вызова: адрес HTTPS (SEC-2)
+ * с именем хоста и ключ API не короче 8 символов; время отклика детерминировано по адресу.
+ */
+@Component
+<span class="fc" id="L17">public class SimulatedIntegrationProbe implements IntegrationProbe {</span>
+
+    static final int MIN_KEY_LENGTH = 8;
+
+    @Override
+    public ProbeResult check(Integration integration, String url, String apiKey) {
+<span class="fc" id="L23">        URI uri = parse(url);</span>
+<span class="fc bfc" id="L24" title="All 6 branches covered.">        if (uri == null || uri.getHost() == null || !&quot;https&quot;.equals(uri.getScheme().toLowerCase(Locale.ROOT))) {</span>
+<span class="fc" id="L25">            return ProbeResult.failure(&quot;Сервер отклонил подключение: нужен адрес HTTPS&quot;);</span>
+        }
+<span class="fc bfc" id="L27" title="All 4 branches covered.">        if (apiKey == null || apiKey.trim().length() &lt; MIN_KEY_LENGTH) {</span>
+<span class="fc" id="L28">            return ProbeResult.failure(&quot;Ключ не принят: &quot; + integration.getName()</span>
+                    + &quot; ожидает ключ не короче &quot; + MIN_KEY_LENGTH + &quot; символов&quot;);
+        }
+<span class="fc" id="L31">        return ProbeResult.success(60 + Math.floorMod(uri.getHost().hashCode(), 180));</span>
+    }
+
+    private static URI parse(String url) {
+        try {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            URI uri = new URI(url == null ? &quot;&quot; : url.trim());</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            return uri.getScheme() == null ? null : uri;</span>
+<span class="fc" id="L38">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L39">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

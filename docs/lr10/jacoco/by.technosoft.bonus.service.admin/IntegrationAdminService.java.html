@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationAdminService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.admin</a> &gt; <span class="el_source">IntegrationAdminService.java</span></div><h1>IntegrationAdminService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.admin;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Integration;
+import by.technosoft.bonus.domain.IntegrationCheck;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.IntegrationCheckRepository;
+import by.technosoft.bonus.repository.IntegrationRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+import by.technosoft.bonus.service.audit.AuditTrail;
+import by.technosoft.bonus.service.exception.ConflictException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import by.technosoft.bonus.service.integration.IntegrationProbe;
+import by.technosoft.bonus.service.integration.IntegrationProbe.ProbeResult;
+import by.technosoft.bonus.service.integration.SecretCipher;
+import by.technosoft.bonus.service.query.IntegrationQueryService;
+import by.technosoft.bonus.service.query.IntegrationQueryService.IntegrationState;
+
+/**
+ * Настройка интеграций администратором (UC13): проверка соединения, смена адреса и ключа API,
+ * включение и отключение синхронизации. Ключ хранится только в зашифрованном виде (DATA-4)
+ * и клиенту не возвращается.
+ */
+@Service
+public class IntegrationAdminService {
+
+    /**
+     * Изменения подключения; {@code null} — поле не меняется.
+     *
+     * @param apiKey новый ключ; {@code null} или пусто — оставить сохранённый
+     */
+<span class="fc" id="L39">    public record IntegrationPatch(String url, String apiKey, Boolean enabled) {</span>
+    }
+
+    private final AccessPolicy accessPolicy;
+    private final IntegrationRepository integrationRepository;
+    private final IntegrationCheckRepository checkRepository;
+    private final IntegrationQueryService integrationQueryService;
+    private final IntegrationProbe probe;
+    private final SecretCipher cipher;
+    private final AuditTrail auditTrail;
+    private final Clock clock;
+
+    public IntegrationAdminService(AccessPolicy accessPolicy,
+                                   IntegrationRepository integrationRepository,
+                                   IntegrationCheckRepository checkRepository,
+                                   IntegrationQueryService integrationQueryService,
+                                   IntegrationProbe probe,
+                                   SecretCipher cipher,
+                                   AuditTrail auditTrail,
+<span class="fc" id="L58">                                   Clock clock) {</span>
+<span class="fc" id="L59">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L60">        this.integrationRepository = integrationRepository;</span>
+<span class="fc" id="L61">        this.checkRepository = checkRepository;</span>
+<span class="fc" id="L62">        this.integrationQueryService = integrationQueryService;</span>
+<span class="fc" id="L63">        this.probe = probe;</span>
+<span class="fc" id="L64">        this.cipher = cipher;</span>
+<span class="fc" id="L65">        this.auditTrail = auditTrail;</span>
+<span class="fc" id="L66">        this.clock = clock;</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Проверка соединения с переданными параметрами; результат сохраняется в журнал проверок.
+     *
+     * @param apiKey ключ; {@code null} или пусто — проверить сохранённый ключ
+     */
+    @Transactional
+    public IntegrationCheck test(Long actorUserId, Long integrationId, String url, String apiKey) {
+<span class="fc" id="L76">        requireAdmin(actorUserId);</span>
+<span class="fc" id="L77">        Integration integration = requireIntegration(integrationId);</span>
+<span class="fc" id="L78">        ProbeResult result = probe.check(integration, url, resolveKey(integration, apiKey));</span>
+<span class="fc" id="L79">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc" id="L80">        checkRepository.insert(integrationId, result.ok(), result.message(), result.latencyMs(), now);</span>
+<span class="fc" id="L81">        auditTrail.record(actorUserId, &quot;Проверка соединения&quot;, &quot;integration&quot;, integrationId,</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">                Map.of(&quot;label&quot;, integration.getName() + &quot; — &quot; + (result.ok() ? &quot;успех&quot; : &quot;ошибка&quot;), &quot;ok&quot;, result.ok()));</span>
+<span class="fc" id="L83">        return checkRepository.findFirstByIntegrationIdOrderByCheckedAtDescIdDesc(integrationId).orElseThrow();</span>
+    }
+
+    /**
+     * Сохранение адреса и ключа (сервер повторно проверяет соединение — неработающие параметры
+     * не сохраняются) и/или включение синхронизации (только после успешной проверки).
+     */
+    @Transactional
+    public IntegrationState update(Long actorUserId, Long integrationId, IntegrationPatch patch) {
+<span class="fc" id="L92">        requireAdmin(actorUserId);</span>
+<span class="fc" id="L93">        Integration integration = requireIntegration(integrationId);</span>
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">        boolean connectionChanged = patch.url() != null || hasText(patch.apiKey());</span>
+<span class="fc" id="L95">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (connectionChanged) {</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">            String url = patch.url() == null ? integration.getUrl() : patch.url().trim();</span>
+<span class="fc" id="L99">            String key = resolveKey(integration, patch.apiKey());</span>
+<span class="fc" id="L100">            ProbeResult result = probe.check(integration, url, key);</span>
+<span class="fc" id="L101">            checkRepository.insert(integrationId, result.ok(), result.message(), result.latencyMs(), now);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (!result.ok()) {</span>
+<span class="fc" id="L103">                throw new ConflictException(&quot;Параметры не сохранены — проверка соединения не прошла: «&quot;</span>
+<span class="fc" id="L104">                        + result.message() + &quot;». Исправьте адрес или ключ и проверьте снова.&quot;);</span>
+            }
+<span class="fc bfc" id="L106" title="All 2 branches covered.">            String storedKey = hasText(patch.apiKey()) ? cipher.encrypt(patch.apiKey().trim())</span>
+<span class="fc" id="L107">                    : integration.getApiKeyEncrypted();</span>
+<span class="fc" id="L108">            integrationRepository.updateConnection(integrationId, url, storedKey);</span>
+<span class="fc" id="L109">            auditTrail.record(actorUserId, &quot;Изменение параметров&quot;, &quot;integration&quot;, integrationId,</span>
+<span class="fc" id="L110">                    Map.of(&quot;label&quot;, integration.getName(), &quot;url&quot;, url));</span>
+        }
+<span class="fc bfc" id="L112" title="All 4 branches covered.">        if (patch.enabled() != null &amp;&amp; patch.enabled() != integration.isEnabled()) {</span>
+<span class="fc bfc" id="L113" title="All 4 branches covered.">            if (patch.enabled() &amp;&amp; !lastCheckOk(integrationId)) {</span>
+<span class="fc" id="L114">                throw new ConflictException(</span>
+                        &quot;Сначала добейтесь успешной проверки соединения, потом включайте интеграцию.&quot;);
+            }
+<span class="fc bfc" id="L117" title="All 2 branches covered.">            integrationRepository.updateEnabled(integrationId, patch.enabled(), patch.enabled() ? now : null);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            auditTrail.record(actorUserId, patch.enabled() ? &quot;Включение интеграции&quot; : &quot;Отключение интеграции&quot;,</span>
+<span class="fc" id="L119">                    &quot;integration&quot;, integrationId, Map.of(&quot;label&quot;, integration.getName()));</span>
+        }
+<span class="fc" id="L121">        return integrationQueryService.get(integrationId);</span>
+    }
+
+    /**
+     * Ключ для проверки: новый, если передан; иначе сохранённый. Значения из демо-данных
+     * записаны не этим шифром — тогда проверяется сохранённое значение как непрозрачный токен.
+     */
+    private String resolveKey(Integration integration, String apiKey) {
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (hasText(apiKey)) {</span>
+<span class="fc" id="L130">            return apiKey.trim();</span>
+        }
+<span class="fc" id="L132">        return cipher.decrypt(integration.getApiKeyEncrypted()).orElse(integration.getApiKeyEncrypted());</span>
+    }
+
+    private boolean lastCheckOk(Long integrationId) {
+<span class="fc" id="L136">        return checkRepository.findFirstByIntegrationIdOrderByCheckedAtDescIdDesc(integrationId)</span>
+<span class="fc" id="L137">                .map(IntegrationCheck::isOk).orElse(false);</span>
+    }
+
+    private Integration requireIntegration(Long id) {
+<span class="fc" id="L141">        return integrationRepository.findById(id)</span>
+<span class="fc" id="L142">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Интеграция не найдена.&quot;));</span>
+    }
+
+    private void requireAdmin(Long actorUserId) {
+<span class="fc" id="L146">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L147">        accessPolicy.requireRole(actor, RoleCode.ADMIN);</span>
+<span class="fc" id="L148">    }</span>
+
+    private static boolean hasText(String s) {
+<span class="fc bfc" id="L151" title="All 4 branches covered.">        return s != null &amp;&amp; !s.isBlank();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

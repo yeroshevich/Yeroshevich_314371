@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">IntegrationCheck.java</span></div><h1>IntegrationCheck.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.time.OffsetDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+/** Результат проверки соединения с внешней системой (таблица integration_check). */
+@Entity
+@Table(name = &quot;integration_check&quot;)
+public class IntegrationCheck {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;integration_id&quot;, nullable = false)
+    private Integration integration;
+
+    @Column(name = &quot;ok&quot;, nullable = false)
+    private boolean ok;
+
+    @Column(name = &quot;message&quot;, nullable = false, length = 255)
+    private String message;
+
+    @Column(name = &quot;latency_ms&quot;)
+    private Integer latencyMs;
+
+    @Column(name = &quot;checked_at&quot;, nullable = false)
+    private OffsetDateTime checkedAt;
+
+<span class="fc" id="L40">    protected IntegrationCheck() {</span>
+<span class="fc" id="L41">    }</span>
+
+    public Long getId() {
+<span class="nc" id="L44">        return id;</span>
+    }
+
+    public Integration getIntegration() {
+<span class="nc" id="L48">        return integration;</span>
+    }
+
+    public boolean isOk() {
+<span class="fc" id="L52">        return ok;</span>
+    }
+
+    public String getMessage() {
+<span class="fc" id="L56">        return message;</span>
+    }
+
+    public Integer getLatencyMs() {
+<span class="fc" id="L60">        return latencyMs;</span>
+    }
+
+    public OffsetDateTime getCheckedAt() {
+<span class="fc" id="L64">        return checkedAt;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

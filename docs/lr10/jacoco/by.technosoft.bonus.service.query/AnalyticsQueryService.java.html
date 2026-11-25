@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AnalyticsQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.query</a> &gt; <span class="el_source">AnalyticsQueryService.java</span></div><h1>AnalyticsQueryService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.query;
+
+import static by.technosoft.bonus.repository.OperationSpecifications.createdBefore;
+import static by.technosoft.bonus.repository.OperationSpecifications.createdFrom;
+import static by.technosoft.bonus.repository.OperationSpecifications.employeeIn;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.Department;
+import by.technosoft.bonus.domain.Employee;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.DepartmentRepository;
+import by.technosoft.bonus.repository.EmployeeRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.AccessPolicy;
+
+/**
+ * Анализ эффективности бонусной системы (UC11): средний бонус, конверсия программ мотивации,
+ * распределение по подразделениям, динамика по месяцам, сравнение с предыдущим периодом той же длины.
+ * Руководитель видит своё подразделение, HR — всю компанию.
+ */
+@Service
+@Transactional(readOnly = true)
+public class AnalyticsQueryService {
+
+    private static final int MONTHLY_POINTS = 6;
+
+<span class="fc" id="L42">    public record Comparison(int current, int previous) {</span>
+    }
+
+<span class="fc" id="L45">    public record DepartmentComparison(String department, int current, int previous) {</span>
+    }
+
+<span class="fc" id="L48">    public record MonthlyFlow(YearMonth month, int accrued, int spent) {</span>
+    }
+
+    /**
+     * @param currentStart  первый месяц текущего периода
+     * @param previousStart первый месяц предыдущего периода
+     * @param partial       данных меньше, чем нужно для полного сравнения (альт. поток UC11)
+     */
+<span class="fc" id="L56">    public record Dashboard(AnalyticsPeriod period, YearMonth currentStart, YearMonth previousStart,</span>
+                            Comparison averageBonus, Comparison programConversion,
+                            Comparison totalAccrued, Comparison totalSpent,
+                            List&lt;DepartmentComparison&gt; byDepartment, List&lt;MonthlyFlow&gt; monthly, boolean partial) {
+    }
+
+    private final AccessPolicy accessPolicy;
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final OperationRepository operationRepository;
+    private final Clock clock;
+
+    public AnalyticsQueryService(AccessPolicy accessPolicy,
+                                 EmployeeRepository employeeRepository,
+                                 DepartmentRepository departmentRepository,
+                                 OperationRepository operationRepository,
+<span class="fc" id="L72">                                 Clock clock) {</span>
+<span class="fc" id="L73">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L74">        this.employeeRepository = employeeRepository;</span>
+<span class="fc" id="L75">        this.departmentRepository = departmentRepository;</span>
+<span class="fc" id="L76">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L77">        this.clock = clock;</span>
+<span class="fc" id="L78">    }</span>
+
+    public Dashboard dashboard(Long actorUserId, AnalyticsPeriod period) {
+<span class="fc" id="L81">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L82">        accessPolicy.requireRole(actor, RoleCode.HR, RoleCode.MANAGER);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        boolean manager = actor.getRoleCode() == RoleCode.MANAGER;</span>
+<span class="fc" id="L84">        Long ownDepartment = actor.getEmployee().getDepartment().getId();</span>
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        List&lt;Employee&gt; scope = manager ? employeeRepository.findByDepartmentId(ownDepartment)</span>
+<span class="fc" id="L87">                : employeeRepository.findAll();</span>
+<span class="fc" id="L88">        List&lt;Long&gt; ids = scope.stream().map(Employee::getId).toList();</span>
+<span class="fc" id="L89">        List&lt;Department&gt; departments = departmentRepository.findAll(Sort.by(&quot;id&quot;)).stream()</span>
+<span class="fc bfc" id="L90" title="All 4 branches covered.">                .filter(d -&gt; !manager || d.getId().equals(ownDepartment))</span>
+<span class="fc" id="L91">                .toList();</span>
+
+<span class="fc" id="L93">        ZoneId zone = clock.getZone();</span>
+<span class="fc" id="L94">        int months = period.months();</span>
+<span class="fc" id="L95">        YearMonth now = YearMonth.now(clock);</span>
+<span class="fc" id="L96">        YearMonth curStart = now.minusMonths(months - 1L);</span>
+<span class="fc" id="L97">        YearMonth prevStart = curStart.minusMonths(months);</span>
+<span class="fc" id="L98">        YearMonth monthlyStart = now.minusMonths(MONTHLY_POINTS - 1L);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        YearMonth loadFrom = prevStart.isBefore(monthlyStart) ? prevStart : monthlyStart;</span>
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        List&lt;Operation&gt; ops = ids.isEmpty() ? List.of() : operationRepository.findAll(</span>
+<span class="fc" id="L102">                employeeIn(ids).and(createdFrom(start(loadFrom, zone))), AccountQueryService.NEWEST_FIRST);</span>
+<span class="fc" id="L103">        List&lt;Operation&gt; cur = ops.stream().filter(inMonths(curStart, now.plusMonths(1), zone)).toList();</span>
+<span class="fc" id="L104">        List&lt;Operation&gt; prev = ops.stream().filter(inMonths(prevStart, curStart, zone)).toList();</span>
+
+<span class="fc" id="L106">        List&lt;DepartmentComparison&gt; byDepartment = departments.stream()</span>
+<span class="fc" id="L107">                .map(d -&gt; new DepartmentComparison(d.getName(),</span>
+<span class="fc" id="L108">                        OperationTotals.accrued(cur.stream().filter(inDepartment(d)).toList()),</span>
+<span class="fc" id="L109">                        OperationTotals.accrued(prev.stream().filter(inDepartment(d)).toList())))</span>
+<span class="fc" id="L110">                .toList();</span>
+
+<span class="fc" id="L112">        List&lt;MonthlyFlow&gt; monthly = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        for (YearMonth m = monthlyStart; !m.isAfter(now); m = m.plusMonths(1)) {</span>
+<span class="fc" id="L114">            List&lt;Operation&gt; list = ops.stream().filter(inMonths(m, m.plusMonths(1), zone)).toList();</span>
+<span class="fc" id="L115">            monthly.add(new MonthlyFlow(m, OperationTotals.accrued(list), OperationTotals.spent(list)));</span>
+        }
+
+        // Неполные данные: в предыдущем периоде нет операций старше его первого месяца.
+<span class="fc bfc" id="L119" title="All 4 branches covered.">        boolean partial = ids.isEmpty() || !operationRepository.exists(</span>
+<span class="fc" id="L120">                employeeIn(ids).and(createdBefore(start(prevStart.plusMonths(1), zone))));</span>
+
+<span class="fc" id="L122">        int people = scope.size();</span>
+<span class="fc" id="L123">        return new Dashboard(period, curStart, prevStart,</span>
+<span class="fc" id="L124">                new Comparison(average(OperationTotals.accrued(cur), people), average(OperationTotals.accrued(prev), people)),</span>
+<span class="fc" id="L125">                new Comparison(conversion(cur, people), conversion(prev, people)),</span>
+<span class="fc" id="L126">                new Comparison(OperationTotals.accrued(cur), OperationTotals.accrued(prev)),</span>
+<span class="fc" id="L127">                new Comparison(OperationTotals.spent(cur), OperationTotals.spent(prev)),</span>
+<span class="fc" id="L128">                byDepartment, List.copyOf(monthly), partial);</span>
+    }
+
+    /** Доля сотрудников, хотя бы раз потративших баллы на программы, %. */
+    private static int conversion(List&lt;Operation&gt; ops, int people) {
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (people == 0) {</span>
+<span class="fc" id="L134">            return 0;</span>
+        }
+<span class="fc" id="L136">        long users = ops.stream()</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">                .filter(o -&gt; o.getType() == OperationType.WRITEOFF &amp;&amp; o.getStatus() == OperationStatus.WRITTEN_OFF)</span>
+<span class="fc" id="L138">                .map(o -&gt; o.getAccount().getEmployee().getId())</span>
+<span class="fc" id="L139">                .distinct()</span>
+<span class="fc" id="L140">                .count();</span>
+<span class="fc" id="L141">        return (int) Math.round(users * 100.0 / people);</span>
+    }
+
+    private static int average(int total, int people) {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        return people == 0 ? 0 : (int) Math.round((double) total / people);</span>
+    }
+
+    private static Predicate&lt;Operation&gt; inMonths(YearMonth fromInclusive, YearMonth toExclusive, ZoneId zone) {
+<span class="fc" id="L149">        var from = start(fromInclusive, zone);</span>
+<span class="fc" id="L150">        var to = start(toExclusive, zone);</span>
+<span class="fc bfc" id="L151" title="All 4 branches covered.">        return o -&gt; !o.getCreatedAt().isBefore(from) &amp;&amp; o.getCreatedAt().isBefore(to);</span>
+    }
+
+    private static Predicate&lt;Operation&gt; inDepartment(Department d) {
+<span class="fc" id="L155">        return o -&gt; d.getId().equals(o.getAccount().getEmployee().getDepartment().getId());</span>
+    }
+
+    private static OffsetDateTime start(YearMonth month, ZoneId zone) {
+<span class="fc" id="L159">        return BonusPeriods.startOfDay(month.atDay(1), zone);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

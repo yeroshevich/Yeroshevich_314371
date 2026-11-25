@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationSpecifications.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.repository</a> &gt; <span class="el_source">OperationSpecifications.java</span></div><h1>OperationSpecifications.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.repository;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+
+/**
+ * Условия поиска операций (Specification). Каждое условие независимо, {@code null}-аргумент
+ * означает «без ограничения»; фильтр журнала собирается из них через {@code and} — новое условие
+ * добавляется без изменения существующих (OCP).
+ */
+public final class OperationSpecifications {
+
+    private OperationSpecifications() {
+    }
+
+    /** Без ограничений — начальное звено цепочки {@code and}. */
+    public static Specification&lt;Operation&gt; all() {
+<span class="fc" id="L24">        return (root, query, cb) -&gt; cb.conjunction();</span>
+    }
+
+    public static Specification&lt;Operation&gt; idIn(Collection&lt;Long&gt; ids) {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        return ids == null ? null : (root, query, cb) -&gt; root.get(&quot;id&quot;).in(ids);</span>
+    }
+
+    public static Specification&lt;Operation&gt; employee(Long employeeId) {
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        return employeeId == null ? null</span>
+<span class="fc" id="L33">                : (root, query, cb) -&gt; cb.equal(root.get(&quot;account&quot;).get(&quot;employee&quot;).get(&quot;id&quot;), employeeId);</span>
+    }
+
+    public static Specification&lt;Operation&gt; employeeIn(Collection&lt;Long&gt; employeeIds) {
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        return employeeIds == null ? null</span>
+<span class="fc" id="L38">                : (root, query, cb) -&gt; root.get(&quot;account&quot;).get(&quot;employee&quot;).get(&quot;id&quot;).in(employeeIds);</span>
+    }
+
+    public static Specification&lt;Operation&gt; department(Long departmentId) {
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        return departmentId == null ? null</span>
+<span class="nc" id="L43">                : (root, query, cb) -&gt; cb.equal(</span>
+<span class="nc" id="L44">                        root.get(&quot;account&quot;).get(&quot;employee&quot;).get(&quot;department&quot;).get(&quot;id&quot;), departmentId);</span>
+    }
+
+    public static Specification&lt;Operation&gt; type(OperationType type) {
+<span class="pc bfc" id="L48" title="All 2 branches covered.">        return type == null ? null : (root, query, cb) -&gt; cb.equal(root.get(&quot;type&quot;), type);</span>
+    }
+
+    public static Specification&lt;Operation&gt; statusIn(Collection&lt;OperationStatus&gt; statuses) {
+<span class="pc bpc" id="L52" title="1 of 4 branches missed.">        return statuses == null || statuses.isEmpty() ? null : (root, query, cb) -&gt; root.get(&quot;status&quot;).in(statuses);</span>
+    }
+
+    public static Specification&lt;Operation&gt; campaign(Long campaignId) {
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        return campaignId == null ? null</span>
+<span class="nc" id="L57">                : (root, query, cb) -&gt; cb.equal(root.get(&quot;campaign&quot;).get(&quot;id&quot;), campaignId);</span>
+    }
+
+    /** Создана не раньше {@code from} (включительно). */
+    public static Specification&lt;Operation&gt; createdFrom(OffsetDateTime from) {
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        return from == null ? null</span>
+<span class="fc" id="L63">                : (root, query, cb) -&gt; cb.greaterThanOrEqualTo(root.&lt;OffsetDateTime&gt;get(&quot;createdAt&quot;), from);</span>
+    }
+
+    /** Создана раньше {@code before} (исключительно). */
+    public static Specification&lt;Operation&gt; createdBefore(OffsetDateTime before) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        return before == null ? null</span>
+<span class="fc" id="L69">                : (root, query, cb) -&gt; cb.lessThan(root.&lt;OffsetDateTime&gt;get(&quot;createdAt&quot;), before);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

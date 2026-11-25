@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RulePeriodicity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">RulePeriodicity.java</span></div><h1>RulePeriodicity.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+/** Периодичность правила начисления (accrual_rule.periodicity). */
+<span class="fc" id="L4">public enum RulePeriodicity implements PersistentEnum {</span>
+    /** Ежемесячно. */
+<span class="fc" id="L6">    MONTH(&quot;month&quot;),</span>
+    /** Ежеквартально. */
+<span class="fc" id="L8">    QUARTER(&quot;quarter&quot;),</span>
+    /** Ежегодно (например, годовщина работы). */
+<span class="fc" id="L10">    YEAR(&quot;year&quot;),</span>
+    /** По событию. */
+<span class="fc" id="L12">    EVENT(&quot;event&quot;);</span>
+
+    private final String dbValue;
+
+<span class="fc" id="L16">    RulePeriodicity(String dbValue) {</span>
+<span class="fc" id="L17">        this.dbValue = dbValue;</span>
+<span class="fc" id="L18">    }</span>
+
+    @Override
+    public String dbValue() {
+<span class="fc" id="L22">        return dbValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

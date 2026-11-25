@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiErrorResponsesCustomizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.config</a> &gt; <span class="el_source">ApiErrorResponsesCustomizer.java</span></div><h1>ApiErrorResponsesCustomizer.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.config;
+
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.web.error.ApiErrorResponse;
+import by.technosoft.bonus.web.error.ErrorCode;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+
+/**
+ * Добавляет в документацию типовые ответы об ошибках в формате {@link ApiErrorResponse} — один раз
+ * для всех операций, а не аннотациями на каждом методе (DRY):
+ * 401/403 — защищённым операциям, 400/422 — операциям с параметрами или телом,
+ * 404 — операциям с идентификатором в пути, 409 — командам (POST/PUT/PATCH).
+ */
+@Component
+<span class="fc" id="L24">public class ApiErrorResponsesCustomizer implements GlobalOpenApiCustomizer {</span>
+
+    private static final String SCHEMA = &quot;ApiError&quot;;
+
+    @Override
+    public void customise(OpenAPI openApi) {
+<span class="nc" id="L30">        ModelConverters.getInstance().read(ApiErrorResponse.class)</span>
+<span class="nc" id="L31">                .forEach((name, schema) -&gt; openApi.getComponents().addSchemas(name, schema));</span>
+<span class="nc" id="L32">        openApi.getPaths().forEach((path, item) -&gt; item.readOperationsMap()</span>
+<span class="nc" id="L33">                .forEach((method, operation) -&gt; addErrors(path, method, operation)));</span>
+<span class="nc" id="L34">    }</span>
+
+    private static void addErrors(String path, PathItem.HttpMethod method, Operation op) {
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        boolean open = op.getSecurity() != null &amp;&amp; op.getSecurity().isEmpty();</span>
+<span class="nc bnc" id="L38" title="All 6 branches missed.">        boolean hasInput = op.getRequestBody() != null || (op.getParameters() != null &amp;&amp; !op.getParameters().isEmpty());</span>
+<span class="nc bnc" id="L39" title="All 6 branches missed.">        boolean command = method == PathItem.HttpMethod.POST || method == PathItem.HttpMethod.PUT</span>
+                || method == PathItem.HttpMethod.PATCH;
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (hasInput) {</span>
+<span class="nc" id="L42">            add(op, ErrorCode.MALFORMED_REQUEST, &quot;Тело или параметр не разобраны&quot;);</span>
+<span class="nc" id="L43">            add(op, ErrorCode.VALIDATION_FAILED, &quot;Данные не прошли проверку&quot;);</span>
+        }
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (!open) {</span>
+<span class="nc" id="L46">            add(op, ErrorCode.UNAUTHORIZED, &quot;Нет действительного токена&quot;);</span>
+<span class="nc" id="L47">            add(op, ErrorCode.ACCESS_DENIED, &quot;Роль не позволяет выполнить действие&quot;);</span>
+        }
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (path.contains(&quot;{&quot;)) {</span>
+<span class="nc" id="L50">            add(op, ErrorCode.NOT_FOUND, &quot;Объект не найден&quot;);</span>
+        }
+<span class="nc bnc" id="L52" title="All 4 branches missed.">        if (command &amp;&amp; !open) {</span>
+<span class="nc" id="L53">            add(op, ErrorCode.CONFLICT, &quot;Конфликт с состоянием данных&quot;);</span>
+        }
+<span class="nc" id="L55">    }</span>
+
+    private static void add(Operation op, ErrorCode code, String description) {
+<span class="nc" id="L58">        String status = String.valueOf(code.status().value());</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (op.getResponses().containsKey(status)) {</span>
+<span class="nc" id="L60">            return;</span>
+        }
+<span class="nc" id="L62">        Schema&lt;?&gt; ref = new Schema&lt;&gt;().$ref(&quot;#/components/schemas/&quot; + SCHEMA);</span>
+<span class="nc" id="L63">        op.getResponses().addApiResponse(status, new ApiResponse()</span>
+<span class="nc" id="L64">                .description(description + &quot; (&quot; + code.name() + &quot; и др.)&quot;)</span>
+<span class="nc" id="L65">                .content(new Content().addMediaType(&quot;application/json&quot;, new MediaType().schema(ref))));</span>
+<span class="nc" id="L66">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

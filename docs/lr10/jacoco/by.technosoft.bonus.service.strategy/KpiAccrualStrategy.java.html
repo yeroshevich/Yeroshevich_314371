@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KpiAccrualStrategy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.strategy</a> &gt; <span class="el_source">KpiAccrualStrategy.java</span></div><h1>KpiAccrualStrategy.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.strategy;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.EnumSet;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+
+import by.technosoft.bonus.domain.AccrualRule;
+import by.technosoft.bonus.domain.RulePeriodicity;
+import by.technosoft.bonus.service.exception.InvalidCalculationInputException;
+
+/**
+ * Периодические правила по KPI (месяц, квартал).
+ * BR-4: сумма = база × вес × уровень достижения / 100;
+ * BR-5: уровень ниже порога правила — бонус не положен (0).
+ */
+@Component
+<span class="fc" id="L20">public class KpiAccrualStrategy implements AccrualStrategy {</span>
+
+<span class="fc" id="L22">    static final BigDecimal MAX_KPI = new BigDecimal(&quot;150&quot;);</span>
+<span class="fc" id="L23">    private static final BigDecimal HUNDRED = new BigDecimal(&quot;100&quot;);</span>
+
+    @Override
+    public Set&lt;RulePeriodicity&gt; supportedPeriodicities() {
+<span class="fc" id="L27">        return EnumSet.of(RulePeriodicity.MONTH, RulePeriodicity.QUARTER);</span>
+    }
+
+    @Override
+    public BaseAmount calculate(AccrualRule rule, BigDecimal kpiValue) {
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (kpiValue == null) {</span>
+<span class="fc" id="L33">            throw new InvalidCalculationInputException(&quot;Некорректные входные данные: значение KPI отсутствует&quot;);</span>
+        }
+<span class="fc bfc" id="L35" title="All 4 branches covered.">        if (kpiValue.signum() &lt; 0 || kpiValue.compareTo(MAX_KPI) &gt; 0) {</span>
+<span class="fc" id="L36">            throw new InvalidCalculationInputException(</span>
+<span class="fc" id="L37">                    &quot;Некорректные входные данные: значение KPI &quot; + kpiValue.toPlainString() + &quot; % вне диапазона 0–150 %&quot;);</span>
+        }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (kpiValue.compareTo(rule.getThreshold()) &lt; 0) {</span>
+<span class="fc" id="L40">            return new BaseAmount(BigDecimal.ZERO, &quot;KPI &quot; + kpiValue.toPlainString() + &quot; % ниже порога &quot;</span>
+<span class="fc" id="L41">                    + rule.getThreshold().stripTrailingZeros().toPlainString() + &quot; % — бонус не положен (BR-5)&quot;);</span>
+        }
+<span class="fc" id="L43">        BigDecimal value = BigDecimal.valueOf(rule.getBasePoints())</span>
+<span class="fc" id="L44">                .multiply(rule.getWeight())</span>
+<span class="fc" id="L45">                .multiply(kpiValue)</span>
+<span class="fc" id="L46">                .divide(HUNDRED, 2, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L47">        String formula = rule.getBasePoints() + &quot; × &quot; + rule.getWeight().toPlainString() + &quot; × &quot;</span>
+<span class="fc" id="L48">                + kpiValue.toPlainString() + &quot; % = &quot; + value.stripTrailingZeros().toPlainString();</span>
+<span class="fc" id="L49">        return new BaseAmount(value, formula);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

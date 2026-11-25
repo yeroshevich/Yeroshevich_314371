@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccrualPreviewRequestDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.dto</a> &gt; <span class="el_source">AccrualPreviewRequestDto.java</span></div><h1>AccrualPreviewRequestDto.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.dto;
+
+import java.util.List;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
+/**
+ * Запрос предварительного расчёта (UC6). Те же поля, что у {@link AccrualRequestDto}, но причина
+ * необязательна: клиент пересчитывает итог «на лету», пока пользователь ещё не ввёл причину,
+ * а расчёт от причины не зависит и ничего не сохраняет.
+ */
+@Schema(name = &quot;AccrualPreviewRequest&quot;)
+<span class="fc" id="L19">public record AccrualPreviewRequestDto(</span>
+        @Schema(example = &quot;[\&quot;1\&quot;, \&quot;3\&quot;]&quot;)
+        @NotEmpty(message = &quot;Выберите хотя бы одного сотрудника.&quot;)
+        @Size(max = 500, message = &quot;За один раз — не больше 500 сотрудников.&quot;)
+        List&lt;@NotNull Long&gt; employeeIds,
+        @Schema(example = &quot;800&quot;)
+        @Positive(message = &quot;Укажите сумму больше нуля.&quot;) @Max(value = 1_000_000, message = &quot;Сумма слишком велика.&quot;)
+        int amount,
+        @Schema(allowableValues = {&quot;kpi&quot;, &quot;project&quot;, &quot;achievement&quot;})
+        @NotNull(message = &quot;Выберите основание начисления.&quot;)
+        @Pattern(regexp = &quot;kpi|project|achievement&quot;, message = &quot;Основание: kpi, project или achievement.&quot;)
+        String basis,
+        @Schema(description = &quot;Необязательна для расчёта&quot;)
+        @Size(max = 300, message = &quot;Причина — не длиннее 300 символов.&quot;) String reason,
+        Long ruleId,
+        Long campaignId) {
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Правила начисления — форма — макет TechnoSoft Bonus</title>
+<link rel="stylesheet" href="wf.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sider">
+    <div class="logo"><i class="x" style="width:28px;height:28px"></i>TechnoSoft Bonus</div>
+    <nav class="menu"><div class="mi"><i class="ico"></i>Главная</div><div class="mi"><i class="ico"></i>Сотрудники</div><div class="mi"><i class="ico"></i>Начисление</div><div class="mi"><i class="ico"></i>Операции</div><div class="mi on"><i class="ico"></i>Правила начисления</div><div class="mi"><i class="ico"></i>Кампании</div><div class="mi"><i class="ico"></i>Отчёты</div><div class="mi"><i class="ico"></i>Аналитика</div></nav>
+    <div class="sfoot"><span class="lbl">Роль: HR</span><span class="fx"><i class="ico"></i>Выйти</span></div>
+  </aside>
+  <header class="hdr">
+    <span class="crumb">Главная / <b>Правила начисления</b></span>
+    <span class="sp"></span>
+    <span class="bell" title="Уведомления"><i></i><b>3</b></span>
+    <span class="prof"><i class="ava"></i><span>Миронова Е. П.<small>HR</small></span><span class="mut">▾</span></span>
+  </header>
+  <main class="main">
+<div class="ph"><h1>Правила начисления</h1><span class="sp"></span><span class="btn p">Добавить правило</span></div>
+<div class="fx" style="margin-bottom:16px"><div class="inp ph-t" style="width:300px"><i class="ico srch"></i><span class="v">Поиск по названию</span></div><span class="seg"><span class="on">Все</span><span class="">Активные</span><span class="">Черновики</span><span class="">Отключённые</span></span></div>
+<table class="t" ><thead><tr><th class="">Название</th><th class="">Показатель</th><th class="r">Вес</th><th class="">Формула</th><th class="">Период</th><th class="">Порог</th><th class="">Статус</th><th class=""></th></tr></thead><tbody><tr class=""><td class="">Выполнение KPI спринта</td><td class="">Закрытые задачи, %</td><td class="r">0,4</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Месяц</td><td class="">80 %</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Сдача проекта в срок</td><td class="">Дата релиза</td><td class="r">0,3</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Квартал</td><td class="">100 %</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Наставничество</td><td class="">Часы с новичками</td><td class="r">0,1</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Месяц</td><td class="">10 ч</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Профессиональная сертификация</td><td class="">Сертификат</td><td class="r">0,2</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Разово</td><td class="">—</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Отзывы клиентов</td><td class="">NPS проекта</td><td class="r">0,15</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Квартал</td><td class="">50</td><td class=""><span class="tag ds">Черновик</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Рационализаторское предложение</td><td class="">Принятые идеи</td><td class="r">0,1</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Месяц</td><td class="">1</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Снижение числа дефектов</td><td class="">Баги в проде</td><td class="r">0,25</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Квартал</td><td class="">−20 %</td><td class=""><span class="tag wh">Отменено</span></td><td class=""><span class="btn s">Изменить</span></td></tr><tr class=""><td class="">Обучение коллег</td><td class="">Проведённые семинары</td><td class="r">0,1</td><td class=""><i class="ln" style="width:110px"></i></td><td class="">Квартал</td><td class="">2</td><td class=""><span class="tag ">Активно</span></td><td class=""><span class="btn s">Изменить</span></td></tr></tbody></table>
+  </main>
+</div>
+<div class="dim"></div>
+<aside class="drawer">
+  <div class="mhd"><h2>Новое правило</h2><span class="close">×</span></div>
+  <div class="mbd">
+    <div class="field"><label>Название</label><div class="inp"><span class="v">Выполнение KPI спринта</span></div></div>
+    <div class="fx" style="gap:16px;align-items:flex-start">
+      <div class="field" style="flex:1"><label>Показатель</label><div class="inp sel"><span class="v">Закрытые задачи, %</span></div></div>
+      <div class="field" style="width:120px"><label>Вес (0–1)</label><div class="inp"><span class="v">0,4</span></div></div>
+    </div>
+    <div class="field"><label>Формула</label><div class="inp ta" style="min-height:64px;font-family:Menlo,Consolas,monospace;font-size:13px"><span class="v">вес × уровень_достижения × 1000</span></div><span class="hint">Пример: при KPI 90 % — 0,4 × 0,9 × 1000 = 360 Б</span></div>
+    <div class="field"><label>Периодичность</label><span class="seg"><span class="on">Месяц</span><span class="">Квартал</span><span class="">Год</span><span class="">Разово</span></span></div>
+    <div class="fx" style="gap:16px;align-items:flex-start">
+      <div class="field" style="flex:1"><label>Порог достижения</label><div class="inp"><span class="v">80</span><span class="mut">%</span></div><span class="hint">Ниже порога бонус не начисляется</span></div>
+      <div class="field" style="flex:1"><label>Действует с</label><div class="inp"><i class="ico cal"></i><span class="v">01.12.2026</span></div></div>
+    </div>
+    <div class="alert"><i class="ico"></i><span>Правило уже применялось в ноябре — изменения вступят в силу с 1 декабря.</span></div>
+  </div>
+  <div class="mft"><span class="fx" style="gap:8px;margin-right:auto"><i class="sw on"></i>Активно</span><span class="btn">Отмена</span><span class="btn p">Сохранить правило</span></div>
+</aside>
+</body>
+</html>

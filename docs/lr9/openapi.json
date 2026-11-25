@@ -1,0 +1,3933 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TechnoSoft Bonus REST API",
+    "description": "Серверная часть ПС управления бонусной системой сотрудников (Spring Boot 3, CON-3).\nJSON, даты ISO 8601 (DATA-3), суммы — целые баллы, идентификаторы — строки.\nАутентификация: POST /api/v1/auth/login → JWT; далее заголовок Authorization: Bearer <token>.\nОшибки — единый формат ApiError {status, code, message, path, timestamp}.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Локальный сервер"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Аутентификация",
+      "description": "SEC-1: вход по email и паролю, JWT HS256 (8 ч)"
+    },
+    {
+      "name": "Бонусный счёт",
+      "description": "UC1 «Просмотр баланса», UC2 «История операций»"
+    },
+    {
+      "name": "Программы мотивации",
+      "description": "UC3 «Использование бонусов»"
+    },
+    {
+      "name": "Аналитика",
+      "description": "UC11 «Анализ эффективности»"
+    },
+    {
+      "name": "Отчёты",
+      "description": "UC10 «Формирование отчётов»; экспорт в Excel/PDF выполняет клиент"
+    },
+    {
+      "name": "Контроль финотдела",
+      "description": "Начисления сверх лимита (UC5) и корректировки в минус (UC7)"
+    },
+    {
+      "name": "Журнал операций",
+      "description": "Поиск операций, UC7 «Корректировка начисления»"
+    },
+    {
+      "name": "Аудит",
+      "description": "NFR-3, SEC-4: журнал действий пользователей и системы"
+    },
+    {
+      "name": "Бонусные кампании",
+      "description": "UC9 «Управление бонусными кампаниями»"
+    },
+    {
+      "name": "Правила начисления",
+      "description": "UC8 «Настройка правил начисления»"
+    },
+    {
+      "name": "Интеграции",
+      "description": "UC13 «Настройка интеграций»: HRIS, ERP, Active Directory, уведомления"
+    },
+    {
+      "name": "Пользователи",
+      "description": "UC12 «Управление пользователями»"
+    },
+    {
+      "name": "Начисления",
+      "description": "UC5 «Ручное начисление», UC6 «Расчёт»"
+    }
+  ],
+  "paths": {
+    "/api/v1/users/{id}": {
+      "put": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Изменить пользователя",
+        "description": "ФИО, email, подразделение, должность, роль.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules/{id}": {
+      "put": {
+        "tags": [
+          "Правила начисления"
+        ],
+        "summary": "Изменить правило",
+        "description": "Правило, применённое в текущем периоде, сохраняется новой версией с начала следующего периода (deferred = true).",
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/{id}": {
+      "put": {
+        "tags": [
+          "Журнал операций"
+        ],
+        "summary": "Корректировка или отмена",
+        "description": "Возвращает новую операцию типа correction. Если баланс стал бы отрицательным — статус pending (согласование финотдела). 409 OPERATION_STATE_CONFLICT для списаний и уже изменённых операций.",
+        "operationId": "correct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/{id}": {
+      "put": {
+        "tags": [
+          "Интеграции"
+        ],
+        "summary": "Изменить подключение",
+        "description": "Адрес и ключ сохраняются только при успешной проверке соединения (иначе 409); enabled = true — только после успешной проверки (409).",
+        "operationId": "update_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrationUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Integration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Пользователи",
+        "description": "С параметром email — проверка дубля: массив из 0 или 1 элемента.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Точный email (без учёта регистра)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Создать пользователя",
+        "description": "Создаёт сотрудника, пустой бонусный счёт и учётную запись с временным паролем. 409 EMAIL_EXISTS — email занят.",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules": {
+      "get": {
+        "tags": [
+          "Правила начисления"
+        ],
+        "summary": "Правила",
+        "description": "Последние версии правил; HR редактирует, руководитель выбирает в мастере начисления.",
+        "operationId": "list_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Rule"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Правила начисления"
+        ],
+        "summary": "Создать правило",
+        "description": "Действует сразу. 409 RULE_EXISTS — для показателя уже есть правило.",
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/programs/{id}/redemptions": {
+      "post": {
+        "tags": [
+          "Программы мотивации"
+        ],
+        "summary": "Списать баллы на программу",
+        "description": "Баланс ≥ стоимости и программа активна. 409 INSUFFICIENT_FUNDS / PROGRAM_INACTIVE, 423 ACCOUNT_BLOCKED, 404 NOT_FOUND.",
+        "operationId": "redeem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Redemption"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read": {
+      "post": {
+        "tags": [
+          "Уведомления"
+        ],
+        "summary": "Отметить все прочитанными",
+        "description": "Идемпотентно.",
+        "operationId": "markAllRead",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/{id}/test": {
+      "post": {
+        "tags": [
+          "Интеграции"
+        ],
+        "summary": "Проверить соединение",
+        "description": "Проверка с переданными адресом и ключом; результат (ok = false — тоже 200) сохраняется в журнал проверок.",
+        "operationId": "test",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrationTestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/control/operations/{id}/block": {
+      "post": {
+        "tags": [
+          "Контроль финотдела"
+        ],
+        "summary": "Заблокировать",
+        "description": "Причина обязательна (422), её увидит сотрудник.",
+        "operationId": "block",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/control/operations/{id}/approve": {
+      "post": {
+        "tags": [
+          "Контроль финотдела"
+        ],
+        "summary": "Подтвердить",
+        "description": "Только операции pending. 409 — операция уже обработана.",
+        "operationId": "approve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns": {
+      "get": {
+        "tags": [
+          "Бонусные кампании"
+        ],
+        "summary": "Кампании",
+        "description": "С израсходованным бюджетом; новые сверху.",
+        "operationId": "list_5",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Campaign"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Бонусные кампании"
+        ],
+        "summary": "Создать кампанию",
+        "description": "Без бюджета — статус needs_approval (альт. поток UC9); иначе planned / active / finished по датам. 422 — окончание раньше начала.",
+        "operationId": "create_2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Аутентификация"
+        ],
+        "summary": "Выход",
+        "description": "Токен без состояния удаляет клиент; сервер фиксирует выход в аудите.",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Аутентификация"
+        ],
+        "summary": "Вход",
+        "description": "Проверка email и пароля (BCrypt). 401 BAD_CREDENTIALS, 403 USER_BLOCKED.",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/accruals": {
+      "post": {
+        "tags": [
+          "Начисления"
+        ],
+        "summary": "Начислить",
+        "description": "Итог ≤ лимита — «accrued», выше лимита — «pending» на согласование финотдела. Руководитель — только своей команде (403). Заблокированный счёт — 423, начисление не проводится.",
+        "operationId": "create_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccrualRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccrualResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accruals/preview": {
+      "post": {
+        "tags": [
+          "Начисления"
+        ],
+        "summary": "Предварительный расчёт",
+        "description": "Сумма × коэффициент кампании по каждому сотруднику и признак превышения лимита. Ничего не сохраняет; причина необязательна.",
+        "operationId": "preview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccrualPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccrualPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/status": {
+      "patch": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Заблокировать / разблокировать",
+        "description": "409 — нельзя заблокировать себя.",
+        "operationId": "setStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт с состоянием данных (CONFLICT и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{type}": {
+      "get": {
+        "tags": [
+          "Отчёты"
+        ],
+        "summary": "Сформировать отчёт",
+        "description": "Строки только с операциями за период [from; to].",
+        "operationId": "build",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "description": "employees | departments | campaigns",
+            "required": true,
+            "schema": {
+              "pattern": "employees|departments|campaigns",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Объект не найден (NOT_FOUND и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/programs": {
+      "get": {
+        "tags": [
+          "Программы мотивации"
+        ],
+        "summary": "Каталог программ",
+        "description": "Активные и недоступные программы (с пояснением).",
+        "operationId": "list_2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Program"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations": {
+      "get": {
+        "tags": [
+          "Журнал операций"
+        ],
+        "summary": "Журнал операций с фильтрами",
+        "description": "Все параметры необязательны; status можно повторять (status=pending&status=blocked) или перечислять через запятую.",
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "accrual | writeoff | correction",
+            "required": false,
+            "schema": {
+              "pattern": "accrual|writeoff|correction",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "accrued | written_off | corrected | pending | blocked | cancelled",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Поиск по номеру, ФИО или причине",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Operation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "Уведомления"
+        ],
+        "summary": "Мои уведомления",
+        "description": "Новые сверху.",
+        "operationId": "list_3",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notification"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations": {
+      "get": {
+        "tags": [
+          "Интеграции"
+        ],
+        "summary": "Подключения",
+        "description": "С результатом последней проверки; ключ API — маской.",
+        "operationId": "list_4",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Integration"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/employees": {
+      "get": {
+        "tags": [
+          "Сотрудники и подразделения"
+        ],
+        "summary": "Сотрудники",
+        "description": "Руководитель видит только подчинённых; HR, финотдел и администратор — всех (scope=team — только своих подчинённых).",
+        "operationId": "employees",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "team | all (по умолчанию all)",
+            "required": false,
+            "schema": {
+              "pattern": "team|all",
+              "type": "string",
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Employee"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/employees/team": {
+      "get": {
+        "tags": [
+          "Сотрудники и подразделения"
+        ],
+        "summary": "Команда с балансами и KPI",
+        "description": "Руководитель — подчинённые, HR — все сотрудники.",
+        "operationId": "team",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TeamMember"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/departments": {
+      "get": {
+        "tags": [
+          "Сотрудники и подразделения"
+        ],
+        "summary": "Подразделения",
+        "description": "Доступно любому вошедшему пользователю.",
+        "operationId": "departments",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Department"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/control/operations": {
+      "get": {
+        "tags": [
+          "Контроль финотдела"
+        ],
+        "summary": "Очередь контроля",
+        "description": "Операции на согласовании (старые сверху) и спорные.",
+        "operationId": "queue",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Operation"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Аутентификация"
+        ],
+        "summary": "Профиль по токену",
+        "description": "Восстановление сессии клиента после перезагрузки вкладки.",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "tags": [
+          "Аудит"
+        ],
+        "summary": "Записи журнала",
+        "description": "Новые сверху, не больше 1000 записей.",
+        "operationId": "search_1",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Поиск по пользователю, действию и объекту",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEntry"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/dashboard": {
+      "get": {
+        "tags": [
+          "Аналитика"
+        ],
+        "summary": "Дашборд",
+        "description": "Сравнение с предыдущим периодом той же длины; руководитель — своё подразделение, HR — вся компания.",
+        "operationId": "dashboard",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "description": "month | quarter | halfyear",
+            "required": false,
+            "schema": {
+              "pattern": "month|quarter|halfyear",
+              "type": "string",
+              "default": "month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsDashboard"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/me": {
+      "get": {
+        "tags": [
+          "Бонусный счёт"
+        ],
+        "summary": "Баланс и сводка",
+        "description": "Баланс, итоги месяца, последние операции, динамика за 6 месяцев. Заблокированный счёт — 423 ACCOUNT_BLOCKED.",
+        "operationId": "summary",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/me/operations": {
+      "get": {
+        "tags": [
+          "Бонусный счёт"
+        ],
+        "summary": "История операций своего счёта",
+        "description": "Период [from; to] включительно и тип операции.",
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Дата начала, YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Дата окончания, YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "accrual | writeoff | correction",
+            "required": false,
+            "schema": {
+              "pattern": "accrual|writeoff|correction",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Operation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Тело или параметр не разобраны (MALFORMED_REQUEST и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Данные не прошли проверку (VALIDATION_FAILED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Нет действительного токена (UNAUTHORIZED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Роль не позволяет выполнить действие (ACCESS_DENIED и др.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserInput": {
+        "required": [
+          "departmentId",
+          "email",
+          "fullName",
+          "position",
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "example": "Марина Захарова"
+          },
+          "email": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "example": "marina.zakharova@technosoft.by"
+          },
+          "departmentId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 2
+          },
+          "position": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "example": "QA-инженер"
+          },
+          "role": {
+            "pattern": "employee|manager|hr|finance|admin",
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr",
+              "finance",
+              "admin"
+            ]
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Анна Ковалёва"
+          },
+          "email": {
+            "type": "string",
+            "example": "anna.kovaleva@technosoft.by"
+          },
+          "departmentId": {
+            "type": "string",
+            "example": "1"
+          },
+          "position": {
+            "type": "string",
+            "example": "Frontend-разработчик"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr",
+              "finance",
+              "admin"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
+          },
+          "employeeId": {
+            "type": "string",
+            "description": "Сотрудник с бонусным счётом",
+            "example": "1"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RuleInput": {
+        "required": [
+          "kpi",
+          "name",
+          "periodicity",
+          "threshold",
+          "weight"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "example": "Выполнение плана спринта"
+          },
+          "kpi": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "description": "Название показателя KPI; новый показатель добавляется в справочник",
+            "example": "Выполнение плана спринта"
+          },
+          "weight": {
+            "maximum": 1,
+            "exclusiveMaximum": false,
+            "minimum": 0.05,
+            "exclusiveMinimum": false,
+            "type": "number",
+            "example": 0.4
+          },
+          "basePoints": {
+            "maximum": 1000000,
+            "type": "integer",
+            "format": "int32",
+            "example": 3000
+          },
+          "periodicity": {
+            "pattern": "month|quarter|year|event",
+            "type": "string",
+            "enum": [
+              "month",
+              "quarter",
+              "year",
+              "event"
+            ]
+          },
+          "threshold": {
+            "maximum": 150,
+            "exclusiveMaximum": false,
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "type": "number",
+            "example": 80
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kpi": {
+            "type": "string",
+            "description": "Показатель KPI"
+          },
+          "weight": {
+            "type": "number",
+            "example": 0.4
+          },
+          "basePoints": {
+            "type": "integer",
+            "format": "int32",
+            "example": 3000
+          },
+          "formula": {
+            "type": "string",
+            "example": "3 000 × 0,4 × уровень достижения"
+          },
+          "periodicity": {
+            "type": "string",
+            "enum": [
+              "month",
+              "quarter",
+              "year",
+              "event"
+            ]
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Порог — минимальное выполнение KPI, %",
+            "example": 80
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "usedInCurrentPeriod": {
+            "type": "boolean",
+            "description": "Правило применялось в текущем периоде: изменения будут отложены"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RuleSaveResult": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "$ref": "#/components/schemas/Rule"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "description": "Дата вступления изменений в силу",
+            "format": "date"
+          },
+          "deferred": {
+            "type": "boolean",
+            "description": "Изменения отложены до следующего периода (альт. поток UC8)"
+          }
+        }
+      },
+      "CorrectionRequest": {
+        "required": [
+          "action",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "pattern": "adjust|cancel",
+            "type": "string",
+            "enum": [
+              "adjust",
+              "cancel"
+            ]
+          },
+          "newAmount": {
+            "maximum": 1000000,
+            "type": "integer",
+            "description": "Новая сумма (для adjust)",
+            "format": "int32",
+            "example": 600
+          },
+          "reason": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "Operation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "154"
+          },
+          "number": {
+            "type": "string",
+            "example": "ОП-000154"
+          },
+          "employeeId": {
+            "type": "string"
+          },
+          "employeeName": {
+            "type": "string"
+          },
+          "departmentId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "accrual",
+              "writeoff",
+              "correction"
+            ]
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Сумма со знаком: «+» начисление, «−» списание",
+            "format": "int32",
+            "example": 800
+          },
+          "originalAmount": {
+            "type": "integer",
+            "description": "Сумма до корректировки (UC7)",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "accrued",
+              "written_off",
+              "corrected",
+              "pending",
+              "blocked",
+              "cancelled"
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "kpi",
+              "project",
+              "achievement",
+              "campaign",
+              "program",
+              "correction"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "programId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ФИО автора или «Система» для автоначисления"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Комментарий финотдела или причина согласования"
+          },
+          "disputed": {
+            "type": "boolean",
+            "description": "Финотдел пометил операцию спорной"
+          }
+        }
+      },
+      "IntegrationUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "maxLength": 255,
+            "minLength": 0,
+            "pattern": "^https?://\\S+$",
+            "type": "string",
+            "example": "https://hris.technosoft.by/api/v3"
+          },
+          "apiKey": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string",
+            "description": "Новый ключ API; маска или пусто — оставить сохранённый"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Включить или выключить синхронизацию"
+          }
+        }
+      },
+      "Integration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "hris",
+              "erp",
+              "ad",
+              "notifications"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "Маска ключа: сам ключ хранится зашифрованным и не возвращается (DATA-4)",
+            "example": "••••••••"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "lastSyncAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastCheck": {
+            "$ref": "#/components/schemas/IntegrationCheck"
+          }
+        }
+      },
+      "IntegrationCheck": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "example": "Соединение установлено"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latencyMs": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "BonusAccount": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
+          },
+          "balance": {
+            "type": "integer",
+            "description": "Доступный баланс, баллы",
+            "format": "int32",
+            "example": 10600
+          },
+          "pending": {
+            "type": "integer",
+            "description": "Начисления на согласовании, баллы",
+            "format": "int32",
+            "example": 1500
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Redemption": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "$ref": "#/components/schemas/Operation"
+          },
+          "account": {
+            "$ref": "#/components/schemas/BonusAccount"
+          }
+        }
+      },
+      "IntegrationTestRequest": {
+        "required": [
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "example": "https://hris.technosoft.by/api/v2"
+          },
+          "apiKey": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string",
+            "description": "Ключ API; маска или пусто — проверить сохранённый ключ",
+            "example": "hris-7f3a9c21e4b8"
+          }
+        }
+      },
+      "BlockRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string",
+            "example": "Нет подтверждения от руководителя проекта"
+          }
+        }
+      },
+      "ReviewRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "CampaignInput": {
+        "required": [
+          "coefficient",
+          "departmentIds",
+          "endDate",
+          "name",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "example": "Зимний спринт качества"
+          },
+          "description": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "Дата начала: YYYY-MM-DD или момент ISO 8601 (переводится в дату по Europe/Minsk)",
+            "example": "2027-01-10"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2027-01-31"
+          },
+          "departmentIds": {
+            "type": "array",
+            "example": [
+              "1",
+              "2"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "coefficient": {
+            "maximum": 5,
+            "exclusiveMaximum": false,
+            "minimum": 1,
+            "exclusiveMinimum": false,
+            "type": "number",
+            "example": 1.5
+          },
+          "budget": {
+            "type": "integer",
+            "description": "Бюджет, баллы; null — не выделен (статус needs_approval)",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "Campaign": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "departmentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coefficient": {
+            "type": "number",
+            "example": 1.5
+          },
+          "budget": {
+            "type": "integer",
+            "description": "Бюджет, баллы; null — бюджет не выделен",
+            "format": "int32",
+            "nullable": true
+          },
+          "spent": {
+            "type": "integer",
+            "description": "Израсходовано (проведённые начисления по кампании)",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "planned",
+              "needs_approval",
+              "finished"
+            ]
+          }
+        }
+      },
+      "LoginRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "example": "anna.kovaleva@technosoft.by"
+          },
+          "password": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "example": "demo"
+          }
+        }
+      },
+      "AuthSession": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT HS256, передаётся в заголовке Authorization: Bearer; срок — 8 ч"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "AccrualRequest": {
+        "required": [
+          "basis",
+          "employeeIds",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "employeeIds": {
+            "maxItems": 500,
+            "minItems": 0,
+            "type": "array",
+            "description": "Сотрудники-получатели (id строкой или числом)",
+            "example": [
+              "1",
+              "3"
+            ],
+            "items": {
+              "type": "integer",
+              "description": "Сотрудники-получатели (id строкой или числом)",
+              "format": "int64"
+            }
+          },
+          "amount": {
+            "maximum": 1000000,
+            "type": "integer",
+            "description": "Сумма на одного сотрудника до коэффициента кампании",
+            "format": "int32",
+            "example": 800
+          },
+          "basis": {
+            "pattern": "kpi|project|achievement",
+            "type": "string",
+            "enum": [
+              "kpi",
+              "project",
+              "achievement"
+            ]
+          },
+          "reason": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string",
+            "example": "Срочный релиз платформы 2.0 в выходные"
+          },
+          "ruleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "campaignId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AccrualResult": {
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Operation"
+            }
+          },
+          "accruedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AccrualPreviewRequest": {
+        "required": [
+          "basis",
+          "employeeIds"
+        ],
+        "type": "object",
+        "properties": {
+          "employeeIds": {
+            "maxItems": 500,
+            "minItems": 0,
+            "type": "array",
+            "example": [
+              "1",
+              "3"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "amount": {
+            "maximum": 1000000,
+            "type": "integer",
+            "format": "int32",
+            "example": 800
+          },
+          "basis": {
+            "pattern": "kpi|project|achievement",
+            "type": "string",
+            "enum": [
+              "kpi",
+              "project",
+              "achievement"
+            ]
+          },
+          "reason": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string",
+            "description": "Необязательна для расчёта"
+          },
+          "ruleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "campaignId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AccrualPreview": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccrualPreviewLine"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1000
+          },
+          "approvalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AccrualPreviewLine": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string"
+          },
+          "employeeName": {
+            "type": "string"
+          },
+          "baseAmount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coefficient": {
+            "type": "number",
+            "example": 1.5
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "needsApproval": {
+            "type": "boolean",
+            "description": "Итог выше лимита — уйдёт на согласование финотдела"
+          }
+        }
+      },
+      "UserStatusRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "pattern": "active|blocked",
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "employees",
+              "departments",
+              "campaigns"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportRow"
+            }
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReportRow": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "accrued": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "spent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "balance": {
+            "type": "integer",
+            "description": "Баланс (сотрудник, подразделение) или остаток бюджета (кампания)",
+            "format": "int32"
+          },
+          "operations": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Program": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "gift",
+              "education",
+              "merch",
+              "dayoff",
+              "health",
+              "event"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1500
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "inactiveReason": {
+            "type": "string"
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "departmentId": {
+            "type": "string"
+          },
+          "managerId": {
+            "type": "string"
+          },
+          "hiredAt": {
+            "type": "string",
+            "format": "date"
+          },
+          "kpiCompletion": {
+            "type": "integer",
+            "description": "Выполнение KPI за текущий период, % (0–150)",
+            "format": "int32"
+          }
+        }
+      },
+      "TeamMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "departmentId": {
+            "type": "string"
+          },
+          "managerId": {
+            "type": "string"
+          },
+          "hiredAt": {
+            "type": "string",
+            "format": "date"
+          },
+          "kpiCompletion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "departmentName": {
+            "type": "string"
+          },
+          "balance": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
+          },
+          "accruedThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "headId": {
+            "type": "string",
+            "description": "Сотрудник-руководитель"
+          }
+        }
+      },
+      "AuditEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userName": {
+            "type": "string",
+            "example": "Ольга Мельник"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr",
+              "finance",
+              "admin",
+              "system"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "example": "Ручное начисление"
+          },
+          "objectType": {
+            "type": "string",
+            "example": "Операция"
+          },
+          "objectLabel": {
+            "type": "string",
+            "example": "ОП-000154, 800 Б"
+          },
+          "ip": {
+            "type": "string",
+            "example": "127.0.0.1"
+          }
+        }
+      },
+      "AnalyticsDashboard": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "month",
+              "quarter",
+              "halfyear"
+            ]
+          },
+          "currentLabel": {
+            "type": "string",
+            "example": "сен – ноя 2026"
+          },
+          "previousLabel": {
+            "type": "string",
+            "example": "июн – авг 2026"
+          },
+          "averageBonus": {
+            "$ref": "#/components/schemas/Comparison"
+          },
+          "programConversion": {
+            "$ref": "#/components/schemas/Comparison"
+          },
+          "totalAccrued": {
+            "$ref": "#/components/schemas/Comparison"
+          },
+          "totalSpent": {
+            "$ref": "#/components/schemas/Comparison"
+          },
+          "byDepartment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepartmentComparison"
+            }
+          },
+          "monthly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyFlow"
+            }
+          },
+          "partial": {
+            "type": "boolean",
+            "description": "Данных меньше, чем нужно для полного сравнения (альт. поток UC11)"
+          }
+        }
+      },
+      "Comparison": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "previous": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "Доля сотрудников, потративших баллы на программы, %"
+      },
+      "DepartmentComparison": {
+        "type": "object",
+        "properties": {
+          "department": {
+            "type": "string"
+          },
+          "current": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "previous": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "MonthlyFlow": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "ноя"
+          },
+          "accrued": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "spent": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AccountSummary": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/BonusAccount"
+          },
+          "accruedThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "spentThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "recent": {
+            "type": "array",
+            "description": "Последние 5 операций",
+            "items": {
+              "$ref": "#/components/schemas/Operation"
+            }
+          },
+          "history": {
+            "type": "array",
+            "description": "Баланс на конец каждого из 6 последних месяцев",
+            "items": {
+              "$ref": "#/components/schemas/MonthBalance"
+            }
+          }
+        }
+      },
+      "MonthBalance": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-11"
+          },
+          "balance": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "description": "Баланс на конец каждого из 6 последних месяцев"
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 409
+          },
+          "code": {
+            "type": "string",
+            "example": "INSUFFICIENT_FUNDS"
+          },
+          "message": {
+            "type": "string",
+            "example": "Не хватает 1 400 Б: программа стоит 12 000 Б, на счёте 10 600 Б."
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/v1/programs/6/redemptions"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Ответ об ошибке"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

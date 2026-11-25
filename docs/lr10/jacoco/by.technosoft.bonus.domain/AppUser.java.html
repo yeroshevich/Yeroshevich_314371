@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppUser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">AppUser.java</span></div><h1>AppUser.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import java.time.OffsetDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+/** Учётная запись пользователя (таблица app_user). */
+@Entity
+@Table(name = &quot;app_user&quot;)
+public class AppUser {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;employee_id&quot;, nullable = false)
+    private Employee employee;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;role_code&quot;, nullable = false)
+    private Role role;
+
+    /** Хеш пароля BCrypt (DATA-4). */
+    @Column(name = &quot;password_hash&quot;, nullable = false, length = 100)
+    private String passwordHash;
+
+    @Column(name = &quot;status&quot;, nullable = false, length = 10)
+    private UserStatus status;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = &quot;last_login_at&quot;)
+    private OffsetDateTime lastLoginAt;
+
+<span class="fc" id="L46">    protected AppUser() {</span>
+<span class="fc" id="L47">    }</span>
+
+    public Long getId() {
+<span class="fc" id="L50">        return id;</span>
+    }
+
+    public Employee getEmployee() {
+<span class="fc" id="L54">        return employee;</span>
+    }
+
+    public Role getRole() {
+<span class="nc" id="L58">        return role;</span>
+    }
+
+    /** Код роли пользователя. */
+    public RoleCode getRoleCode() {
+<span class="fc" id="L63">        return role.toRoleCode();</span>
+    }
+
+    public String getPasswordHash() {
+<span class="fc" id="L67">        return passwordHash;</span>
+    }
+
+    public UserStatus getStatus() {
+<span class="fc" id="L71">        return status;</span>
+    }
+
+    public boolean isActive() {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        return status == UserStatus.ACTIVE;</span>
+    }
+
+    public OffsetDateTime getCreatedAt() {
+<span class="nc" id="L79">        return createdAt;</span>
+    }
+
+    public OffsetDateTime getLastLoginAt() {
+<span class="fc" id="L83">        return lastLoginAt;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

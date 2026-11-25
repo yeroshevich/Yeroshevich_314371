@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntegrationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.controller</a> &gt; <span class="el_source">IntegrationController.java</span></div><h1>IntegrationController.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.controller;
+
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import by.technosoft.bonus.service.admin.IntegrationAdminService;
+import by.technosoft.bonus.service.query.IntegrationQueryService;
+import by.technosoft.bonus.web.dto.IntegrationCheckDto;
+import by.technosoft.bonus.web.dto.IntegrationDto;
+import by.technosoft.bonus.web.dto.IntegrationTestRequest;
+import by.technosoft.bonus.web.dto.IntegrationUpdateRequest;
+import by.technosoft.bonus.web.mapper.IntegrationMapper;
+import by.technosoft.bonus.web.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+/** Интеграции с внешними системами (UC13). */
+@RestController
+@RequestMapping(ApiPaths.V1 + &quot;/integrations&quot;)
+@PreAuthorize(Roles.ADMIN)
+@Tag(name = &quot;Интеграции&quot;, description = &quot;UC13 «Настройка интеграций»: HRIS, ERP, Active Directory, уведомления&quot;)
+public class IntegrationController {
+
+    private final IntegrationQueryService integrationQueryService;
+    private final IntegrationAdminService integrationAdminService;
+    private final IntegrationMapper mapper;
+
+    public IntegrationController(IntegrationQueryService integrationQueryService,
+                                 IntegrationAdminService integrationAdminService,
+<span class="fc" id="L40">                                 IntegrationMapper mapper) {</span>
+<span class="fc" id="L41">        this.integrationQueryService = integrationQueryService;</span>
+<span class="fc" id="L42">        this.integrationAdminService = integrationAdminService;</span>
+<span class="fc" id="L43">        this.mapper = mapper;</span>
+<span class="fc" id="L44">    }</span>
+
+    @GetMapping
+    @Operation(summary = &quot;Подключения&quot;, description = &quot;С результатом последней проверки; ключ API — маской.&quot;)
+    public List&lt;IntegrationDto&gt; list() {
+<span class="nc" id="L49">        return integrationQueryService.list().stream().map(mapper::toDto).toList();</span>
+    }
+
+    @PostMapping(&quot;/{id}/test&quot;)
+    @Operation(summary = &quot;Проверить соединение&quot;, description = &quot;Проверка с переданными адресом и ключом; результат &quot;
+            + &quot;(ok = false — тоже 200) сохраняется в журнал проверок.&quot;)
+    public IntegrationCheckDto test(@AuthenticationPrincipal AuthenticatedUser me, @PathVariable Long id,
+                                    @Valid @RequestBody IntegrationTestRequest request) {
+<span class="nc" id="L57">        return mapper.toDto(integrationAdminService.test(me.userId(), id, request.url(),</span>
+<span class="nc" id="L58">                mapper.newKeyOrNull(request.apiKey())));</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Изменить подключение&quot;, description = &quot;Адрес и ключ сохраняются только при успешной проверке &quot;
+            + &quot;соединения (иначе 409); enabled = true — только после успешной проверки (409).&quot;)
+    public IntegrationDto update(@AuthenticationPrincipal AuthenticatedUser me, @PathVariable Long id,
+                                 @Valid @RequestBody IntegrationUpdateRequest request) {
+<span class="fc" id="L66">        return mapper.toDto(integrationAdminService.update(me.userId(), id, mapper.toPatch(request)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

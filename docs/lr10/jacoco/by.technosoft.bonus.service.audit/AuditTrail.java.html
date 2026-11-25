@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditTrail.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service.audit</a> &gt; <span class="el_source">AuditTrail.java</span></div><h1>AuditTrail.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service.audit;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.AuditLog;
+import by.technosoft.bonus.repository.AppUserRepository;
+import by.technosoft.bonus.repository.AuditLogRepository;
+
+/**
+ * Запись административных действий в журнал аудита (NFR-3, SEC-4): правила, кампании,
+ * пользователи, интеграции, вход и выход. Пишет в транзакции вызывающего сервиса —
+ * действие и запись аудита фиксируются или откатываются вместе.
+ * (Операции по счетам журналирует {@code AuditListener} по доменным событиям.)
+ */
+@Component
+public class AuditTrail {
+
+    private final AuditLogRepository auditLogRepository;
+    private final AppUserRepository userRepository;
+    private final ClientAddressProvider clientAddress;
+    private final ObjectMapper objectMapper;
+    private final Clock clock;
+
+    public AuditTrail(AuditLogRepository auditLogRepository, AppUserRepository userRepository,
+<span class="fc" id="L35">                      ClientAddressProvider clientAddress, ObjectMapper objectMapper, Clock clock) {</span>
+<span class="fc" id="L36">        this.auditLogRepository = auditLogRepository;</span>
+<span class="fc" id="L37">        this.userRepository = userRepository;</span>
+<span class="fc" id="L38">        this.clientAddress = clientAddress;</span>
+<span class="fc" id="L39">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L40">        this.clock = clock;</span>
+<span class="fc" id="L41">    }</span>
+
+    /**
+     * @param actorUserId инициатор ({@code null} — система)
+     * @param action      действие для людей: «Создание правила»
+     * @param objectType  тип объекта (имя таблицы): accrual_rule, campaign, app_user, integration, session
+     * @param objectId    идентификатор объекта
+     * @param details     подробности; ключ {@code label} показывается в журнале как «объект»
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void record(Long actorUserId, String action, String objectType, Long objectId, Map&lt;String, ?&gt; details) {
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        AppUser actor = actorUserId == null ? null : userRepository.getReferenceById(actorUserId);</span>
+<span class="fc" id="L53">        auditLogRepository.save(new AuditLog(OffsetDateTime.now(clock), actor, action, objectType, objectId,</span>
+<span class="fc" id="L54">                toJson(details), clientAddress.currentAddress().orElse(null)));</span>
+<span class="fc" id="L55">    }</span>
+
+    private String toJson(Map&lt;String, ?&gt; details) {
+        try {
+<span class="fc" id="L59">            return objectMapper.writeValueAsString(details);</span>
+<span class="nc" id="L60">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L61">            throw new IllegalStateException(&quot;Не удалось сериализовать детали аудита&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

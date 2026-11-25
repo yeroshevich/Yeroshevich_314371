@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.web.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.web.security;
+
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import by.technosoft.bonus.config.SecurityProperties;
+import by.technosoft.bonus.service.auth.AuthenticationService;
+
+/**
+ * Безопасность REST API (SEC-1, SEC-3): без состояния (JWT вместо сессии), CSRF выключен
+ * (нет cookie-аутентификации), CORS для клиентской части, BCrypt для паролей (DATA-4).
+ * Вход открыт, документация API открыта, остальное — только с токеном; роли проверяются
+ * {@code @PreAuthorize} на методах контроллеров.
+ */
+@Configuration
+@EnableMethodSecurity
+<span class="fc" id="L32">public class SecurityConfig {</span>
+
+    static final String API = &quot;/api/v1&quot;;
+
+    @Bean
+    public SecurityFilterChain apiSecurity(HttpSecurity http,
+                                           TokenService tokenService,
+                                           AuthenticationService authenticationService,
+                                           RestAuthenticationEntryPoint entryPoint,
+                                           RestAccessDeniedHandler accessDeniedHandler) throws Exception {
+<span class="fc" id="L42">        http</span>
+<span class="fc" id="L43">                .csrf(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L44">                .cors(cors -&gt; { })</span>
+<span class="fc" id="L45">                .httpBasic(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L46">                .formLogin(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L47">                .logout(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L48">                .requestCache(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L49">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L50">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L51">                        .requestMatchers(HttpMethod.OPTIONS, &quot;/**&quot;).permitAll()</span>
+<span class="fc" id="L52">                        .requestMatchers(HttpMethod.POST, API + &quot;/auth/login&quot;).permitAll()</span>
+<span class="fc" id="L53">                        .requestMatchers(&quot;/v3/api-docs/**&quot;, &quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;, &quot;/error&quot;).permitAll()</span>
+<span class="fc" id="L54">                        .anyRequest().authenticated())</span>
+<span class="fc" id="L55">                .exceptionHandling(e -&gt; e</span>
+<span class="fc" id="L56">                        .authenticationEntryPoint(entryPoint)</span>
+<span class="fc" id="L57">                        .accessDeniedHandler(accessDeniedHandler))</span>
+<span class="fc" id="L58">                .addFilterBefore(new JwtAuthenticationFilter(tokenService, authenticationService),</span>
+                        UsernamePasswordAuthenticationFilter.class);
+<span class="fc" id="L60">        return http.build();</span>
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L65">        return new BCryptPasswordEncoder();</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(SecurityProperties properties) {
+<span class="fc" id="L70">        CorsConfiguration cors = new CorsConfiguration();</span>
+<span class="fc" id="L71">        cors.setAllowedOrigins(properties.corsOrigins());</span>
+<span class="fc" id="L72">        cors.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L73">        cors.setAllowedHeaders(List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE));</span>
+<span class="fc" id="L74">        cors.setMaxAge(3600L);</span>
+<span class="fc" id="L75">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L76">        source.registerCorsConfiguration(API + &quot;/**&quot;, cors);</span>
+<span class="fc" id="L77">        return source;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

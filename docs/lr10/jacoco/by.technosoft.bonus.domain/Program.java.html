@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Program.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.domain</a> &gt; <span class="el_source">Program.java</span></div><h1>Program.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+/** Программа мотивации, на которую тратятся баллы (таблица program, UC3). */
+@Entity
+@Table(name = &quot;program&quot;)
+public class Program {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;name&quot;, nullable = false, length = 150)
+    private String name;
+
+    @Column(name = &quot;category&quot;, nullable = false, length = 15)
+    private ProgramCategory category;
+
+    @Column(name = &quot;description&quot;, nullable = false, columnDefinition = &quot;text&quot;)
+    private String description;
+
+    /** Стоимость в баллах. */
+    @Column(name = &quot;cost&quot;, nullable = false)
+    private int cost;
+
+    @Column(name = &quot;active&quot;, nullable = false)
+    private boolean active;
+
+    /** Пояснение, почему программа недоступна. */
+    @Column(name = &quot;inactive_reason&quot;, length = 200)
+    private String inactiveReason;
+
+<span class="fc" id="L39">    protected Program() {</span>
+<span class="fc" id="L40">    }</span>
+
+    public Long getId() {
+<span class="fc" id="L43">        return id;</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L47">        return name;</span>
+    }
+
+    public ProgramCategory getCategory() {
+<span class="nc" id="L51">        return category;</span>
+    }
+
+    public String getDescription() {
+<span class="nc" id="L55">        return description;</span>
+    }
+
+    public int getCost() {
+<span class="fc" id="L59">        return cost;</span>
+    }
+
+    public boolean isActive() {
+<span class="fc" id="L63">        return active;</span>
+    }
+
+    public String getInactiveReason() {
+<span class="fc" id="L67">        return inactiveReason;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

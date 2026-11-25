@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CorrectionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TechnoSoft Bonus</a> &gt; <a href="index.source.html" class="el_package">by.technosoft.bonus.service</a> &gt; <span class="el_source">CorrectionService.java</span></div><h1>CorrectionService.java</h1><pre class="source lang-java linenums">package by.technosoft.bonus.service;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import by.technosoft.bonus.domain.AppUser;
+import by.technosoft.bonus.domain.BonusAccount;
+import by.technosoft.bonus.domain.Operation;
+import by.technosoft.bonus.domain.OperationBasis;
+import by.technosoft.bonus.domain.OperationStatus;
+import by.technosoft.bonus.domain.OperationType;
+import by.technosoft.bonus.domain.RoleCode;
+import by.technosoft.bonus.repository.BonusAccountRepository;
+import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.dto.CorrectionAction;
+import by.technosoft.bonus.service.dto.CorrectionRequest;
+import by.technosoft.bonus.service.dto.CorrectionResult;
+import by.technosoft.bonus.service.dto.OperationView;
+import by.technosoft.bonus.service.event.OperationAction;
+import by.technosoft.bonus.service.event.OperationRegisteredEvent;
+import by.technosoft.bonus.service.exception.AccountBlockedException;
+import by.technosoft.bonus.service.exception.DomainValidationException;
+import by.technosoft.bonus.service.exception.ObjectNotFoundException;
+import by.technosoft.bonus.service.exception.OperationStateException;
+import jakarta.validation.Valid;
+
+/**
+ * Корректировка и отмена начислений (UC7). История не переписывается (DATA-1):
+ * исходная операция переходит в «cancelled», а новая сумма фиксируется отдельной
+ * операцией типа «correction» со ссылкой corrects_id и исходной суммой original_amount.
+ * Отмена — корректировка с отрицательной суммой −исходная (в баланс не входит, статус «cancelled»).
+ */
+@Service
+@Validated
+public class CorrectionService {
+
+    private final AccessPolicy accessPolicy;
+    private final OperationRepository operationRepository;
+    private final BonusAccountRepository accountRepository;
+    private final OperationNumberGenerator numberGenerator;
+    private final ApplicationEventPublisher events;
+    private final Clock clock;
+
+    public CorrectionService(AccessPolicy accessPolicy,
+                             OperationRepository operationRepository,
+                             BonusAccountRepository accountRepository,
+                             OperationNumberGenerator numberGenerator,
+                             ApplicationEventPublisher events,
+<span class="fc" id="L54">                             Clock clock) {</span>
+<span class="fc" id="L55">        this.accessPolicy = accessPolicy;</span>
+<span class="fc" id="L56">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L57">        this.accountRepository = accountRepository;</span>
+<span class="fc" id="L58">        this.numberGenerator = numberGenerator;</span>
+<span class="fc" id="L59">        this.events = events;</span>
+<span class="fc" id="L60">        this.clock = clock;</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * UC7 «Корректировка начисления» (увеличение, уменьшение или отмена; HR — любые операции,
+     * руководитель — своей команды). Если итоговый баланс станет отрицательным, корректировка
+     * уходит на согласование финотдела («pending»): исходная операция и баланс не меняются.
+     */
+    @Transactional
+    public CorrectionResult correct(Long operationId, @Valid CorrectionRequest request, Long actorUserId) {
+<span class="fc" id="L70">        AppUser actor = accessPolicy.requireActiveUser(actorUserId);</span>
+<span class="fc" id="L71">        accessPolicy.requireRole(actor, RoleCode.HR, RoleCode.MANAGER);</span>
+
+<span class="fc" id="L73">        Operation original = operationRepository.lockById(operationId)</span>
+<span class="fc" id="L74">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Операция не найдена. Обновите журнал.&quot;));</span>
+<span class="fc" id="L75">        accessPolicy.requireCanManage(actor, original.getAccount().getEmployee());</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (original.getType() == OperationType.WRITEOFF</span>
+<span class="fc bfc" id="L77" title="All 4 branches covered.">                || (original.getStatus() != OperationStatus.ACCRUED &amp;&amp; original.getStatus() != OperationStatus.CORRECTED)) {</span>
+<span class="fc" id="L78">            throw new OperationStateException(&quot;Операцию в статусе «&quot; + original.getStatus().dbValue()</span>
+                    + &quot;» корректировать нельзя.&quot;);
+        }
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (operationRepository.existsByCorrectsIdAndStatus(original.getId(), OperationStatus.PENDING)) {</span>
+<span class="fc" id="L82">            throw new OperationStateException(&quot;По операции &quot; + original.getNumber()</span>
+                    + &quot; уже есть корректировка на согласовании.&quot;);
+        }
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        boolean cancel = request.action() == CorrectionAction.CANCEL;</span>
+<span class="fc" id="L87">        int oldAmount = original.getAmount();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        int newAmount = cancel ? 0 : requireNewAmount(request, oldAmount);</span>
+<span class="fc" id="L89">        int delta = newAmount - oldAmount;</span>
+
+<span class="fc" id="L91">        BonusAccount account = accountRepository.lockById(original.getAccount().getId())</span>
+<span class="pc" id="L92">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Счёт операции не найден.&quot;));</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (!account.isActive()) {</span>
+<span class="fc" id="L94">            throw new AccountBlockedException(&quot;Счёт сотрудника заблокирован: корректировка невозможна.&quot;);</span>
+        }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        boolean needsApproval = account.getBalance() + delta &lt; 0;</span>
+
+        OperationStatus status;
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (needsApproval) {</span>
+<span class="fc" id="L100">            status = OperationStatus.PENDING;</span>
+        } else {
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            status = cancel ? OperationStatus.CANCELLED : OperationStatus.CORRECTED;</span>
+        }
+<span class="fc" id="L104">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
+<span class="fc" id="L105">        Operation correction = Operation.create(numberGenerator.next(), account, OperationType.CORRECTION, status,</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">                        OperationBasis.CORRECTION, cancel ? -oldAmount : newAmount, request.reason().trim(), actor, now)</span>
+<span class="fc" id="L107">                .correcting(original);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (!needsApproval) {</span>
+<span class="fc" id="L109">            original.transitionTo(OperationStatus.CANCELLED);</span>
+<span class="fc" id="L110">            account.applyDelta(delta, now);</span>
+        }
+<span class="fc" id="L112">        operationRepository.save(correction);</span>
+
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        String comment = needsApproval</span>
+<span class="fc" id="L115">                ? &quot;Баланс станет &quot; + PointsFormat.format(account.getBalance() + delta) + &quot;: нужно согласование финотдела&quot;</span>
+<span class="fc" id="L116">                : null;</span>
+<span class="fc" id="L117">        events.publishEvent(OperationRegisteredEvent.of(</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                cancel ? OperationAction.CANCELLATION : OperationAction.CORRECTION, correction, actor, comment));</span>
+<span class="fc" id="L119">        return new CorrectionResult(OperationView.of(original), OperationView.of(correction), needsApproval);</span>
+    }
+
+    private static int requireNewAmount(CorrectionRequest request, int oldAmount) {
+<span class="fc" id="L123">        Integer newAmount = request.newAmount();</span>
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">        if (newAmount == null || newAmount &lt;= 0) {</span>
+<span class="fc" id="L125">            throw new DomainValidationException(</span>
+                    &quot;Сумма должна быть больше нуля. Для отмены выберите «Отменить начисление».&quot;);
+        }
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (newAmount == oldAmount) {</span>
+<span class="fc" id="L129">            throw new DomainValidationException(&quot;Новая сумма совпадает с текущей — корректировать нечего.&quot;);</span>
+        }
+<span class="fc" id="L131">        return newAmount;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
