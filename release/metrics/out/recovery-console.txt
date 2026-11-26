@@ -1,0 +1,41 @@
+TechnoSoft Bonus: http://localhost:8081  (БД localhost:5432/technosoft_bonus_replay, пользователь valeriyyerashevich)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.3.13)
+
+2026-11-25T19:34:14.531+03:00  INFO 74649 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : Starting BonusApplication v0.1.0-SNAPSHOT using Java 21 with PID 74649 (/private/tmp/claude-501/-Users-valeriyyerashevich-SITES-snow2027-------------2---------46-1-12-/039bccbc-1edb-42f5-980e-d76e69a6938f/scratchpad/install-final/TechnoSoftBonus-1.0/app/technosoft-bonus.jar started by valeriyyerashevich in /private/tmp/claude-501/-Users-valeriyyerashevich-SITES-snow2027-------------2---------46-1-12-/039bccbc-1edb-42f5-980e-d76e69a6938f/scratchpad/install-final/TechnoSoftBonus-1.0)
+2026-11-25T19:34:14.532+03:00  INFO 74649 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-11-25T19:34:14.867+03:00  INFO 74649 --- [technosoft-bonus] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-25T19:34:14.900+03:00  INFO 74649 --- [technosoft-bonus] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 30 ms. Found 17 JPA repository interfaces.
+2026-11-25T19:34:15.189+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
+2026-11-25T19:34:15.195+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-25T19:34:15.195+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.42]
+2026-11-25T19:34:15.207+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-25T19:34:15.207+03:00  INFO 74649 --- [technosoft-bonus] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 659 ms
+2026-11-25T19:34:15.331+03:00  INFO 74649 --- [technosoft-bonus] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-25T19:34:15.380+03:00  INFO 74649 --- [technosoft-bonus] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@43b6cb1c
+2026-11-25T19:34:15.380+03:00  INFO 74649 --- [technosoft-bonus] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-25T19:34:15.392+03:00  INFO 74649 --- [technosoft-bonus] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/technosoft_bonus_replay (PostgreSQL 14.18)
+2026-11-25T19:34:15.413+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.012s)
+2026-11-25T19:34:15.422+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-11-25T19:34:15.423+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-25T19:34:15.464+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-11-25T19:34:15.490+03:00  INFO 74649 --- [technosoft-bonus] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-11-25T19:34:15.505+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-11-25T19:34:15.630+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-25T19:34:16.155+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-25T19:34:16.180+03:00  INFO 74649 --- [technosoft-bonus] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-25T19:34:16.284+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-25T19:34:17.047+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-11-25T19:34:17.231+03:00  INFO 74649 --- [technosoft-bonus] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path '/'
+2026-11-25T19:34:17.237+03:00  INFO 74649 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : Started BonusApplication in 2.889 seconds (process running for 3.081)
+2026-11-25T19:34:17.294+03:00  INFO 74649 --- [technosoft-bonus] [           main] .t.b.c.CampaignLifecycleSchedulingConfig : Синхронизация статусов кампаний при старте приложения: изменено 0
+2026-11-25T19:43:43.278+03:00  INFO 74649 --- [technosoft-bonus] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-25T19:43:43.280+03:00  INFO 74649 --- [technosoft-bonus] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-25T19:43:43.282+03:00  INFO 74649 --- [technosoft-bonus] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

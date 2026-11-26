@@ -1,0 +1,2 @@
+  PID    RSS COMMAND
+73888 508064 /Users/valeriyyerashevich/.sdkman/candidates/java/current/bin/java -Xms128m -Xmx512m -Dfile.encoding=UTF-8 -jar app/technosoft-bonus.jar --spring.config.additional-location=file:./config/application.yml

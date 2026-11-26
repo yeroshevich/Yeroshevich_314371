@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import by.technosoft.bonus.repository.CampaignRepository;
 import by.technosoft.bonus.repository.DepartmentRepository;
 import by.technosoft.bonus.repository.EmployeeRepository;
 import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.campaign.CampaignLifecycleService;
 import by.technosoft.bonus.service.exception.DomainValidationException;
 import by.technosoft.bonus.service.query.ReportQueryService.Report;
 import by.technosoft.bonus.service.query.ReportQueryService.ReportLine;
@@ -63,7 +65,8 @@ class ReportQueryServiceTest {
     @BeforeEach
     void setUp() {
         service = new ReportQueryService(operationRepository, employeeRepository, departmentRepository,
-                accountRepository, campaignRepository, new CampaignQueryService(campaignRepository, operationRepository),
+                accountRepository, campaignRepository, new CampaignQueryService(campaignRepository, operationRepository,
+                        mock(CampaignLifecycleService.class)),
                 TestEntities.clock());
         november = List.of(
                 TestEntities.operation(146, d.annaAccount, OperationType.ACCRUAL, OperationStatus.PENDING,

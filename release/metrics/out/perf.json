@@ -1,0 +1,234 @@
+{
+  "summary": {
+    "date": "25.11.2026, 19:39:06",
+    "base": "http://localhost:8080",
+    "limitMs": 2000,
+    "methodsMeasured": 14,
+    "methodsOk": 14,
+    "X_time": 1,
+    "ui": {
+      "runs": 10,
+      "loginScreenP95": 327.41,
+      "loginToBalanceP95": 241.37,
+      "loginToBalanceMedian": 221.09
+    }
+  },
+  "methods": [
+    {
+      "title": "Вход (BCrypt)",
+      "method": "POST",
+      "path": "/auth/login",
+      "n": 50,
+      "errors": 0,
+      "p50": 55.89,
+      "p95": 59.52,
+      "max": 60.52,
+      "ok": true
+    },
+    {
+      "title": "Баланс (PERF-1)",
+      "method": "GET",
+      "path": "/accounts/me",
+      "n": 50,
+      "errors": 0,
+      "p50": 2.12,
+      "p95": 2.86,
+      "max": 6.25,
+      "ok": true
+    },
+    {
+      "title": "История операций",
+      "method": "GET",
+      "path": "/accounts/me/operations",
+      "n": 50,
+      "errors": 0,
+      "p50": 2.86,
+      "p95": 3.44,
+      "max": 4.98,
+      "ok": true
+    },
+    {
+      "title": "Программы мотивации",
+      "method": "GET",
+      "path": "/programs",
+      "n": 50,
+      "errors": 0,
+      "p50": 1.2,
+      "p95": 1.79,
+      "max": 2.08,
+      "ok": true
+    },
+    {
+      "title": "Команда руководителя",
+      "method": "GET",
+      "path": "/employees/team",
+      "n": 50,
+      "errors": 0,
+      "p50": 3.57,
+      "p95": 4.83,
+      "max": 9.6,
+      "ok": true
+    },
+    {
+      "title": "Предварительный расчёт",
+      "method": "POST",
+      "path": "/accruals/preview",
+      "n": 50,
+      "errors": 0,
+      "p50": 5.55,
+      "p95": 6.51,
+      "max": 8.42,
+      "ok": true
+    },
+    {
+      "title": "Журнал операций",
+      "method": "GET",
+      "path": "/operations",
+      "n": 50,
+      "errors": 0,
+      "p50": 3.45,
+      "p95": 4.36,
+      "max": 8.38,
+      "ok": true
+    },
+    {
+      "title": "Очередь контроля",
+      "method": "GET",
+      "path": "/control/operations",
+      "n": 50,
+      "errors": 0,
+      "p50": 2.05,
+      "p95": 3.18,
+      "max": 3.33,
+      "ok": true
+    },
+    {
+      "title": "Правила",
+      "method": "GET",
+      "path": "/rules",
+      "n": 50,
+      "errors": 0,
+      "p50": 2.87,
+      "p95": 3.88,
+      "max": 4.36,
+      "ok": true
+    },
+    {
+      "title": "Кампании",
+      "method": "GET",
+      "path": "/campaigns",
+      "n": 50,
+      "errors": 0,
+      "p50": 2.57,
+      "p95": 4.81,
+      "max": 16.57,
+      "ok": true
+    },
+    {
+      "title": "Отчёт по сотрудникам",
+      "method": "GET",
+      "path": "/reports/employees",
+      "n": 50,
+      "errors": 0,
+      "p50": 3.15,
+      "p95": 4.16,
+      "max": 4.5,
+      "ok": true
+    },
+    {
+      "title": "Аналитика",
+      "method": "GET",
+      "path": "/analytics/dashboard",
+      "n": 50,
+      "errors": 0,
+      "p50": 4.26,
+      "p95": 5.83,
+      "max": 11.6,
+      "ok": true
+    },
+    {
+      "title": "Пользователи",
+      "method": "GET",
+      "path": "/users",
+      "n": 50,
+      "errors": 0,
+      "p50": 1.39,
+      "p95": 2.36,
+      "max": 7.32,
+      "ok": true
+    },
+    {
+      "title": "Журнал аудита",
+      "method": "GET",
+      "path": "/audit",
+      "n": 50,
+      "errors": 0,
+      "p50": 3.27,
+      "p95": 6.85,
+      "max": 25.87,
+      "ok": true
+    }
+  ],
+  "ui": [
+    {
+      "loginScreenMs": 295.47,
+      "domContentLoadedMs": 210.4,
+      "loadMs": 210.6,
+      "loginToBalanceMs": 222.35
+    },
+    {
+      "loginScreenMs": 280.58,
+      "domContentLoadedMs": 217.3,
+      "loadMs": 218.5,
+      "loginToBalanceMs": 221.09
+    },
+    {
+      "loginScreenMs": 276.4,
+      "domContentLoadedMs": 215.9,
+      "loadMs": 217,
+      "loginToBalanceMs": 225.53
+    },
+    {
+      "loginScreenMs": 309.02,
+      "domContentLoadedMs": 233.6,
+      "loadMs": 233.8,
+      "loginToBalanceMs": 219.41
+    },
+    {
+      "loginScreenMs": 306.4,
+      "domContentLoadedMs": 237.4,
+      "loadMs": 237.5,
+      "loginToBalanceMs": 235.12
+    },
+    {
+      "loginScreenMs": 285.53,
+      "domContentLoadedMs": 230.5,
+      "loadMs": 230.6,
+      "loginToBalanceMs": 225.83
+    },
+    {
+      "loginScreenMs": 254.82,
+      "domContentLoadedMs": 195.1,
+      "loadMs": 195.2,
+      "loginToBalanceMs": 241.37
+    },
+    {
+      "loginScreenMs": 272.72,
+      "domContentLoadedMs": 209.1,
+      "loadMs": 209.1,
+      "loginToBalanceMs": 217.8
+    },
+    {
+      "loginScreenMs": 274.63,
+      "domContentLoadedMs": 217.5,
+      "loadMs": 218.4,
+      "loginToBalanceMs": 215.76
+    },
+    {
+      "loginScreenMs": 327.41,
+      "domContentLoadedMs": 262.5,
+      "loadMs": 262.6,
+      "loginToBalanceMs": 215.7
+    }
+  ]
+}

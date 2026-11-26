@@ -1,0 +1,2542 @@
+{
+  "summary": {
+    "date": "25.11.2026, 19:41:37",
+    "analysability": {
+      "classes": 229,
+      "documented": 218,
+      "X": 0.95,
+      "undocumented": [
+        "domain/converter/AccountStatusConverter.java",
+        "domain/converter/CampaignStatusConverter.java",
+        "domain/converter/EventStatusConverter.java",
+        "domain/converter/IntegrationKindConverter.java",
+        "domain/converter/OperationBasisConverter.java",
+        "domain/converter/OperationStatusConverter.java",
+        "domain/converter/OperationTypeConverter.java",
+        "domain/converter/ProgramCategoryConverter.java",
+        "domain/converter/ReviewDecisionConverter.java",
+        "domain/converter/RulePeriodicityConverter.java",
+        "domain/converter/UserStatusConverter.java"
+      ]
+    },
+    "injection": {
+      "components": 76,
+      "withoutFieldInjection": 76,
+      "constructorInjection": 57,
+      "X": 1,
+      "violations": []
+    },
+    "changeability": {
+      "headClasses": 224,
+      "changedExistingForD1": [
+        "backend/src/main/java/by/technosoft/bonus/config/EventSchedulingConfig.java",
+        "backend/src/main/java/by/technosoft/bonus/repository/CampaignRepository.java",
+        "backend/src/main/java/by/technosoft/bonus/service/query/CampaignQueryService.java"
+      ],
+      "X": 0.99,
+      "newSinceHead": [
+        "backend/src/main/java/by/technosoft/bonus/config/CampaignLifecycleSchedulingConfig.java",
+        "backend/src/main/java/by/technosoft/bonus/service/campaign/CampaignLifecycleService.java",
+        "backend/src/main/java/by/technosoft/bonus/web/config/ClientAppConfig.java",
+        "backend/src/main/java/by/technosoft/bonus/web/config/SpaFallbackResourceResolver.java",
+        "backend/src/main/java/by/technosoft/bonus/web/security/ClientSecurityConfig.java"
+      ]
+    },
+    "replaceability": {
+      "ports": 8,
+      "replaceable": 8,
+      "X": 1,
+      "details": [
+        {
+          "port": "TokenService",
+          "impl": "JwtTokenService",
+          "what": "выпуск и проверка токенов входа",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "SecretCipher",
+          "impl": "AesGcmSecretCipher",
+          "what": "шифрование ключей интеграций",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "IntegrationProbe",
+          "impl": "SimulatedIntegrationProbe",
+          "what": "проверка соединения с внешней системой",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "ClientAddressProvider",
+          "impl": "RequestClientAddressProvider",
+          "what": "адрес клиента для журнала аудита",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "AccrualStrategy",
+          "impl": "KpiAccrualStrategy|FixedEventAccrualStrategy",
+          "what": "алгоритм начисления по правилу",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "PasswordEncoder",
+          "impl": "BCryptPasswordEncoder",
+          "what": "хеширование паролей",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "Clock",
+          "impl": "Clock\\.system",
+          "what": "системные часы",
+          "outsideConfig": [],
+          "replaceable": true
+        },
+        {
+          "port": "BonusApi (клиент)",
+          "impl": "mockApi | httpApi",
+          "what": "слой данных клиента (VITE_API_MODE)",
+          "outsideConfig": [],
+          "replaceable": true
+        }
+      ]
+    },
+    "colors": {
+      "rawOutsideTheme": 26,
+      "tokenUsesOutsideTheme": 168,
+      "X_usage": 0.87,
+      "filesWithRaw": [
+        {
+          "file": "components/BalanceCard.tsx",
+          "raw": 4,
+          "samples": [
+            "rgba(255,255,255,.72)",
+            "rgba(255,255,255,.08)",
+            "rgba(255,255,255,.12)",
+            "rgba(255,255,255,.16)"
+          ]
+        },
+        {
+          "file": "layout/AppLayout.tsx",
+          "raw": 3,
+          "samples": [
+            "rgba(255,255,255,.08)",
+            "rgba(255,255,255,.72)"
+          ]
+        },
+        {
+          "file": "pages/DesignSystemPage.tsx",
+          "raw": 4,
+          "samples": [
+            "rgba(255,255,255,.72)",
+            "rgba(255,255,255,.08)",
+            "rgba(59,91,219,.12)",
+            "rgba(59,91,219,.22)"
+          ]
+        },
+        {
+          "file": "pages/LoginPage.tsx",
+          "raw": 7,
+          "samples": [
+            "rgba(255,255,255,.72)",
+            "rgba(255,255,255,.06)",
+            "rgba(255,255,255,.08)",
+            "rgba(255,255,255,.8)",
+            "rgba(255,255,255,.6)"
+          ]
+        },
+        {
+          "file": "styles/global.css",
+          "raw": 8,
+          "samples": [
+            "#1f2430",
+            "#f5f7fa",
+            "#3b5bdb",
+            "#ffffff",
+            "#e3e6ec"
+          ]
+        }
+      ],
+      "screens": 17,
+      "screensOk": 16,
+      "X_screens": 0.94,
+      "sharedRaw": [
+        "components/BalanceCard.tsx",
+        "layout/AppLayout.tsx"
+      ]
+    },
+    "functions": {
+      "total": 38,
+      "byRole": {
+        "Сотрудник": 6,
+        "Руководитель": 9,
+        "HR": 11,
+        "Финансовый отдел": 6,
+        "Администратор": 6
+      }
+    },
+    "ease": {
+      "threshold": 5,
+      "operations": 30,
+      "within": 30,
+      "X": 1,
+      "cases": [
+        {
+          "id": "TC-01",
+          "title": "Вход в систему по email и паролю",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-02",
+          "title": "Отклонение входа с неверным паролем",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-03",
+          "title": "Просмотр текущего бонусного баланса",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-04",
+          "title": "Отображение сообщения о недоступном балансе",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-05",
+          "title": "Просмотр истории операций своего счёта",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-06",
+          "title": "Фильтрация истории операций по периоду",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-07",
+          "title": "Отображение пустого списка за период без операций",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-08",
+          "title": "Использование баллов на программу мотивации",
+          "steps": 4,
+          "userSteps": 4,
+          "ok": true
+        },
+        {
+          "id": "TC-09",
+          "title": "Отклонение списания при недостатке баллов",
+          "steps": 3,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-10",
+          "title": "Автоматическое начисление по KPI-событию",
+          "steps": 3,
+          "userSteps": 1,
+          "ok": true
+        },
+        {
+          "id": "TC-11",
+          "title": "Предварительный расчёт начисления с коэффициентом кампании",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-12",
+          "title": "Ручное начисление сотруднику команды в пределах лимита",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-13",
+          "title": "Отправка начисления сверх лимита на согласование",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-14",
+          "title": "Подтверждение начисления на согласовании финансовым отделом",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-15",
+          "title": "Отказ в доступе к разделу другой роли",
+          "steps": 3,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-16",
+          "title": "Корректировка суммы ошибочного начисления",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-17",
+          "title": "Отправка на согласование корректировки, уводящей баланс в минус",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-18",
+          "title": "Фиксация корректировки в журнале аудита",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-19",
+          "title": "Создание правила начисления",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-20",
+          "title": "Изменение применённого правила с отложенным вступлением в силу",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-21",
+          "title": "Создание бонусной кампании без бюджета",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-22",
+          "title": "Формирование отчёта по подразделениям за период",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-23",
+          "title": "Формирование отчёта за период без данных",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-24",
+          "title": "Просмотр анализа эффективности бонусной системы",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-25",
+          "title": "Создание учётной записи пользователя",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-26",
+          "title": "Предупреждение о существующем email при создании пользователя",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-27",
+          "title": "Изменение роли пользователя",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-28",
+          "title": "Блокировка учётной записи пользователя",
+          "steps": 3,
+          "userSteps": 3,
+          "ok": true
+        },
+        {
+          "id": "TC-29",
+          "title": "Проверка соединения интеграции с адресом HTTP",
+          "steps": 2,
+          "userSteps": 2,
+          "ok": true
+        },
+        {
+          "id": "TC-30",
+          "title": "Настройка подключения и включение автоматической синхронизации",
+          "steps": 4,
+          "userSteps": 4,
+          "ok": true
+        }
+      ]
+    }
+  },
+  "javadoc": [
+    {
+      "file": "BonusApplication.java",
+      "documented": true
+    },
+    {
+      "file": "config/BonusProperties.java",
+      "documented": true
+    },
+    {
+      "file": "config/CampaignLifecycleSchedulingConfig.java",
+      "documented": true
+    },
+    {
+      "file": "config/EventSchedulingConfig.java",
+      "documented": true
+    },
+    {
+      "file": "config/SecurityProperties.java",
+      "documented": true
+    },
+    {
+      "file": "config/TimeConfig.java",
+      "documented": true
+    },
+    {
+      "file": "domain/AccountStatus.java",
+      "documented": true
+    },
+    {
+      "file": "domain/AccrualRule.java",
+      "documented": true
+    },
+    {
+      "file": "domain/AppUser.java",
+      "documented": true
+    },
+    {
+      "file": "domain/AuditLog.java",
+      "documented": true
+    },
+    {
+      "file": "domain/BonusAccount.java",
+      "documented": true
+    },
+    {
+      "file": "domain/BusinessEvent.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Campaign.java",
+      "documented": true
+    },
+    {
+      "file": "domain/CampaignDepartment.java",
+      "documented": true
+    },
+    {
+      "file": "domain/CampaignDepartmentId.java",
+      "documented": true
+    },
+    {
+      "file": "domain/CampaignStatus.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Department.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Employee.java",
+      "documented": true
+    },
+    {
+      "file": "domain/EventStatus.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Integration.java",
+      "documented": true
+    },
+    {
+      "file": "domain/IntegrationCheck.java",
+      "documented": true
+    },
+    {
+      "file": "domain/IntegrationKind.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Kpi.java",
+      "documented": true
+    },
+    {
+      "file": "domain/KpiResult.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Notification.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Operation.java",
+      "documented": true
+    },
+    {
+      "file": "domain/OperationBasis.java",
+      "documented": true
+    },
+    {
+      "file": "domain/OperationNumber.java",
+      "documented": true
+    },
+    {
+      "file": "domain/OperationReview.java",
+      "documented": true
+    },
+    {
+      "file": "domain/OperationStatus.java",
+      "documented": true
+    },
+    {
+      "file": "domain/OperationType.java",
+      "documented": true
+    },
+    {
+      "file": "domain/PersistentEnum.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Program.java",
+      "documented": true
+    },
+    {
+      "file": "domain/ProgramCategory.java",
+      "documented": true
+    },
+    {
+      "file": "domain/ReviewDecision.java",
+      "documented": true
+    },
+    {
+      "file": "domain/Role.java",
+      "documented": true
+    },
+    {
+      "file": "domain/RoleCode.java",
+      "documented": true
+    },
+    {
+      "file": "domain/RulePeriodicity.java",
+      "documented": true
+    },
+    {
+      "file": "domain/UserStatus.java",
+      "documented": true
+    },
+    {
+      "file": "domain/converter/AccountStatusConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/CampaignStatusConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/EventStatusConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/IntegrationKindConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/OperationBasisConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/OperationStatusConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/OperationTypeConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/PersistentEnumConverter.java",
+      "documented": true
+    },
+    {
+      "file": "domain/converter/ProgramCategoryConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/ReviewDecisionConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/RulePeriodicityConverter.java",
+      "documented": false
+    },
+    {
+      "file": "domain/converter/UserStatusConverter.java",
+      "documented": false
+    },
+    {
+      "file": "repository/AccrualRuleRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/AmountByKey.java",
+      "documented": true
+    },
+    {
+      "file": "repository/AppUserRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/AuditLogRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/BonusAccountRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/BusinessEventRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/CampaignDepartmentRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/CampaignRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/DepartmentRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/EmployeeRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/IntegrationCheckRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/IntegrationRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/KpiRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/KpiResultRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/NotificationRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/OperationRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/OperationReviewRepository.java",
+      "documented": true
+    },
+    {
+      "file": "repository/OperationSpecifications.java",
+      "documented": true
+    },
+    {
+      "file": "repository/ProgramRepository.java",
+      "documented": true
+    },
+    {
+      "file": "service/AccessPolicy.java",
+      "documented": true
+    },
+    {
+      "file": "service/AccrualService.java",
+      "documented": true
+    },
+    {
+      "file": "service/BonusCalculationService.java",
+      "documented": true
+    },
+    {
+      "file": "service/CorrectionService.java",
+      "documented": true
+    },
+    {
+      "file": "service/EventProcessingService.java",
+      "documented": true
+    },
+    {
+      "file": "service/OperationNumberGenerator.java",
+      "documented": true
+    },
+    {
+      "file": "service/PointsFormat.java",
+      "documented": true
+    },
+    {
+      "file": "service/RedemptionService.java",
+      "documented": true
+    },
+    {
+      "file": "service/ReviewService.java",
+      "documented": true
+    },
+    {
+      "file": "service/admin/CampaignAdminService.java",
+      "documented": true
+    },
+    {
+      "file": "service/admin/IntegrationAdminService.java",
+      "documented": true
+    },
+    {
+      "file": "service/admin/RuleAdminService.java",
+      "documented": true
+    },
+    {
+      "file": "service/admin/UserAdminService.java",
+      "documented": true
+    },
+    {
+      "file": "service/audit/AuditTrail.java",
+      "documented": true
+    },
+    {
+      "file": "service/audit/ClientAddressProvider.java",
+      "documented": true
+    },
+    {
+      "file": "service/auth/AuthenticationService.java",
+      "documented": true
+    },
+    {
+      "file": "service/campaign/CampaignLifecycleService.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/AccrualPreview.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/AccrualPreviewLine.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/AccrualRequest.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/AccrualResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/BatchProcessingResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/CalculationRequest.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/CalculationResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/CorrectionAction.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/CorrectionRequest.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/CorrectionResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/EventOutcome.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/EventProcessingResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/OperationView.java",
+      "documented": true
+    },
+    {
+      "file": "service/dto/RedemptionResult.java",
+      "documented": true
+    },
+    {
+      "file": "service/event/EventProcessingFailedEvent.java",
+      "documented": true
+    },
+    {
+      "file": "service/event/OperationAction.java",
+      "documented": true
+    },
+    {
+      "file": "service/event/OperationRegisteredEvent.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/AccessDeniedDomainException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/AccountBlockedException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/BonusDomainException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/ConflictException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/DomainValidationException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/DuplicateEmailException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/InsufficientBalanceException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/InvalidCalculationInputException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/InvalidCredentialsException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/ObjectNotFoundException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/OperationStateException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/ProgramUnavailableException.java",
+      "documented": true
+    },
+    {
+      "file": "service/exception/UserBlockedException.java",
+      "documented": true
+    },
+    {
+      "file": "service/integration/AesGcmSecretCipher.java",
+      "documented": true
+    },
+    {
+      "file": "service/integration/IntegrationProbe.java",
+      "documented": true
+    },
+    {
+      "file": "service/integration/SecretCipher.java",
+      "documented": true
+    },
+    {
+      "file": "service/integration/SimulatedIntegrationProbe.java",
+      "documented": true
+    },
+    {
+      "file": "service/listener/AuditListener.java",
+      "documented": true
+    },
+    {
+      "file": "service/listener/NotificationListener.java",
+      "documented": true
+    },
+    {
+      "file": "service/notification/NotificationService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/AccountQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/AnalyticsPeriod.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/AnalyticsQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/AuditQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/BonusPeriods.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/CampaignQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/DirectoryQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/EmployeeQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/IntegrationQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/OperationQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/OperationTotals.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/ReportQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/ReportType.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/RuleQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/query/UserQueryService.java",
+      "documented": true
+    },
+    {
+      "file": "service/strategy/AccrualStrategy.java",
+      "documented": true
+    },
+    {
+      "file": "service/strategy/AccrualStrategyRegistry.java",
+      "documented": true
+    },
+    {
+      "file": "service/strategy/BaseAmount.java",
+      "documented": true
+    },
+    {
+      "file": "service/strategy/FixedEventAccrualStrategy.java",
+      "documented": true
+    },
+    {
+      "file": "service/strategy/KpiAccrualStrategy.java",
+      "documented": true
+    },
+    {
+      "file": "web/config/ApiErrorResponsesCustomizer.java",
+      "documented": true
+    },
+    {
+      "file": "web/config/ClientAppConfig.java",
+      "documented": true
+    },
+    {
+      "file": "web/config/OpenApiConfig.java",
+      "documented": true
+    },
+    {
+      "file": "web/config/SpaFallbackResourceResolver.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/AccountController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/AccrualController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/AnalyticsController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/ApiPaths.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/AuditController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/AuthController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/CampaignController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/ControlController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/DirectoryController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/IntegrationController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/NotificationController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/OperationController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/ProgramController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/ReportController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/Roles.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/RuleController.java",
+      "documented": true
+    },
+    {
+      "file": "web/controller/UserController.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccountSummaryDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccrualPreviewDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccrualPreviewLineDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccrualPreviewRequestDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccrualRequestDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AccrualResultDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AnalyticsDashboardDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AuditEntryDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/AuthSessionDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/BlockRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/BonusAccountDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/CampaignDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/CampaignRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/CorrectionRequestDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/DepartmentDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/EmployeeDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/IntegrationCheckDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/IntegrationDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/IntegrationTestRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/IntegrationUpdateRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/LoginRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/MonthBalanceDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/NotificationDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/OperationDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/ProgramDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/RedemptionDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/ReportDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/ReportRowDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/ReviewRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/RuleDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/RuleRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/RuleSaveResultDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/TeamMemberDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/UserDto.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/UserRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/dto/UserStatusRequest.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/ApiErrorResponse.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/DomainErrorStatus.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/ErrorCode.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/ErrorResponseFactory.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/GlobalExceptionHandler.java",
+      "documented": true
+    },
+    {
+      "file": "web/error/SecurityMessages.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/AccountMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/AccrualMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/AnalyticsMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/ApiValues.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/AuditMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/CampaignMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/DirectoryMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/IntegrationMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/NotificationMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/OperationMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/ReportMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/RuleMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/mapper/UserMapper.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/AuthenticatedUser.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/ClientSecurityConfig.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/JwtAuthenticationFilter.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/JwtTokenService.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/RequestClientAddressProvider.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/RestAccessDeniedHandler.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/RestAuthenticationEntryPoint.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/SecurityConfig.java",
+      "documented": true
+    },
+    {
+      "file": "web/security/TokenService.java",
+      "documented": true
+    }
+  ],
+  "components": [
+    {
+      "file": "config/CampaignLifecycleSchedulingConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "config/EventSchedulingConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "config/TimeConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "service/AccessPolicy.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "service/AccrualService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 11,
+      "ok": true
+    },
+    {
+      "file": "service/BonusCalculationService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 7,
+      "ok": true
+    },
+    {
+      "file": "service/CorrectionService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "service/EventProcessingService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 12,
+      "ok": true
+    },
+    {
+      "file": "service/OperationNumberGenerator.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "service/RedemptionService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 7,
+      "ok": true
+    },
+    {
+      "file": "service/ReviewService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "service/admin/CampaignAdminService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 7,
+      "ok": true
+    },
+    {
+      "file": "service/admin/IntegrationAdminService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 8,
+      "ok": true
+    },
+    {
+      "file": "service/admin/RuleAdminService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "service/admin/UserAdminService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 10,
+      "ok": true
+    },
+    {
+      "file": "service/audit/AuditTrail.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 5,
+      "ok": true
+    },
+    {
+      "file": "service/auth/AuthenticationService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "service/campaign/CampaignLifecycleService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "service/integration/AesGcmSecretCipher.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "service/integration/SimulatedIntegrationProbe.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "service/listener/AuditListener.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 4,
+      "ok": true
+    },
+    {
+      "file": "service/listener/NotificationListener.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "service/notification/NotificationService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "service/query/AccountQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 4,
+      "ok": true
+    },
+    {
+      "file": "service/query/AnalyticsQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 5,
+      "ok": true
+    },
+    {
+      "file": "service/query/AuditQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "service/query/CampaignQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "service/query/DirectoryQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "service/query/EmployeeQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "service/query/IntegrationQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "service/query/OperationQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 4,
+      "ok": true
+    },
+    {
+      "file": "service/query/ReportQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 7,
+      "ok": true
+    },
+    {
+      "file": "service/query/RuleQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "service/query/UserQueryService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "service/strategy/AccrualStrategyRegistry.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "service/strategy/FixedEventAccrualStrategy.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "service/strategy/KpiAccrualStrategy.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/config/ApiErrorResponsesCustomizer.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/config/ClientAppConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/config/OpenApiConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/controller/AccountController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/AccrualController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/AnalyticsController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/controller/AuditController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/controller/AuthController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/CampaignController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/ControlController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/DirectoryController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/IntegrationController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/NotificationController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/controller/OperationController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/ProgramController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 6,
+      "ok": true
+    },
+    {
+      "file": "web/controller/ReportController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/controller/RuleController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/controller/UserController.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/error/DomainErrorStatus.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/error/ErrorResponseFactory.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/error/GlobalExceptionHandler.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 2,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/AccountMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/AccrualMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/AnalyticsMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/AuditMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/CampaignMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/DirectoryMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/IntegrationMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/NotificationMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/OperationMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/ReportMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/RuleMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/mapper/UserMapper.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/security/ClientSecurityConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/security/JwtTokenService.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 3,
+      "ok": true
+    },
+    {
+      "file": "web/security/RequestClientAddressProvider.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    },
+    {
+      "file": "web/security/RestAccessDeniedHandler.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/security/RestAuthenticationEntryPoint.java",
+      "fieldInjection": [],
+      "constructorInjection": true,
+      "finalFields": 1,
+      "ok": true
+    },
+    {
+      "file": "web/security/SecurityConfig.java",
+      "fieldInjection": [],
+      "constructorInjection": false,
+      "finalFields": 0,
+      "ok": true
+    }
+  ],
+  "colorFiles": [
+    {
+      "file": "App.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/client.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/demo.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/http/httpApi.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/index.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/mock/db.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/mock/mockApi.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/session.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "api/types.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "auth/AuthContext.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "auth/RequireAuth.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "components/Amount.tsx",
+      "raw": 0,
+      "tokens": 4,
+      "rawSamples": []
+    },
+    {
+      "file": "components/BalanceCard.tsx",
+      "raw": 4,
+      "tokens": 12,
+      "rawSamples": [
+        "rgba(255,255,255,.72)",
+        "rgba(255,255,255,.08)",
+        "rgba(255,255,255,.12)",
+        "rgba(255,255,255,.16)"
+      ]
+    },
+    {
+      "file": "components/ErrorState.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "components/OperationFilters.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "components/OperationList.tsx",
+      "raw": 0,
+      "tokens": 2,
+      "rawSamples": []
+    },
+    {
+      "file": "components/OperationStatusTag.tsx",
+      "raw": 0,
+      "tokens": 18,
+      "rawSamples": []
+    },
+    {
+      "file": "components/PageHeader.tsx",
+      "raw": 0,
+      "tokens": 1,
+      "rawSamples": []
+    },
+    {
+      "file": "components/PageSkeleton.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "components/PointsMark.tsx",
+      "raw": 0,
+      "tokens": 3,
+      "rawSamples": []
+    },
+    {
+      "file": "components/StatCard.tsx",
+      "raw": 0,
+      "tokens": 2,
+      "rawSamples": []
+    },
+    {
+      "file": "hooks/useAsync.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "hooks/useIsMobile.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "layout/AppLayout.tsx",
+      "raw": 3,
+      "tokens": 11,
+      "rawSamples": [
+        "rgba(255,255,255,.08)",
+        "rgba(255,255,255,.72)"
+      ]
+    },
+    {
+      "file": "layout/NotificationBell.tsx",
+      "raw": 0,
+      "tokens": 4,
+      "rawSamples": []
+    },
+    {
+      "file": "main.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/AccrualWizardPage.tsx",
+      "raw": 0,
+      "tokens": 8,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/AnalyticsPage.tsx",
+      "raw": 0,
+      "tokens": 15,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/CampaignsPage.tsx",
+      "raw": 0,
+      "tokens": 8,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/ControlPage.tsx",
+      "raw": 0,
+      "tokens": 6,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/DesignSystemPage.tsx",
+      "raw": 4,
+      "tokens": 18,
+      "rawSamples": [
+        "rgba(255,255,255,.72)",
+        "rgba(255,255,255,.08)",
+        "rgba(59,91,219,.12)",
+        "rgba(59,91,219,.22)"
+      ]
+    },
+    {
+      "file": "pages/ForbiddenPage.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/HistoryPage.tsx",
+      "raw": 0,
+      "tokens": 4,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/LoginPage.tsx",
+      "raw": 7,
+      "tokens": 8,
+      "rawSamples": [
+        "rgba(255,255,255,.72)",
+        "rgba(255,255,255,.06)",
+        "rgba(255,255,255,.08)",
+        "rgba(255,255,255,.8)",
+        "rgba(255,255,255,.6)"
+      ]
+    },
+    {
+      "file": "pages/MyBalancePage.tsx",
+      "raw": 0,
+      "tokens": 9,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/NotFoundPage.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/OperationsPage.tsx",
+      "raw": 0,
+      "tokens": 3,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/ProgramsPage.tsx",
+      "raw": 0,
+      "tokens": 6,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/ReportsPage.tsx",
+      "raw": 0,
+      "tokens": 1,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/RulesPage.tsx",
+      "raw": 0,
+      "tokens": 6,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/TeamPage.tsx",
+      "raw": 0,
+      "tokens": 9,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/admin/AuditPage.tsx",
+      "raw": 0,
+      "tokens": 2,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/admin/IntegrationsPage.tsx",
+      "raw": 0,
+      "tokens": 6,
+      "rawSamples": []
+    },
+    {
+      "file": "pages/admin/UsersPage.tsx",
+      "raw": 0,
+      "tokens": 2,
+      "rawSamples": []
+    },
+    {
+      "file": "routes.tsx",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "setupDayjs.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "styles/global.css",
+      "raw": 8,
+      "tokens": 0,
+      "rawSamples": [
+        "#1f2430",
+        "#f5f7fa",
+        "#3b5bdb",
+        "#ffffff",
+        "#e3e6ec"
+      ]
+    },
+    {
+      "file": "theme/antdTheme.ts",
+      "raw": 3,
+      "tokens": 26,
+      "rawSamples": [
+        "rgba(47,158,68,.08)",
+        "rgba(47,158,68,.14)",
+        "rgba(47,158,68,.35)"
+      ]
+    },
+    {
+      "file": "theme/tokens.ts",
+      "raw": 15,
+      "tokens": 0,
+      "rawSamples": [
+        "#3B5BDB",
+        "#4C6EF5",
+        "#F59F00",
+        "#2F9E44",
+        "#E03131"
+      ]
+    },
+    {
+      "file": "utils/exportCsv.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "utils/format.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    },
+    {
+      "file": "vite-env.d.ts",
+      "raw": 0,
+      "tokens": 0,
+      "rawSamples": []
+    }
+  ],
+  "functions": [
+    {
+      "role": "Сотрудник",
+      "menu": "Мой баланс",
+      "screen": "Мой баланс",
+      "path": "/me"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Мой баланс",
+      "screen": "Мой баланс",
+      "path": "/me"
+    },
+    {
+      "role": "HR",
+      "menu": "Главная",
+      "screen": "Мой баланс",
+      "path": "/me"
+    },
+    {
+      "role": "Сотрудник",
+      "menu": "История операций",
+      "screen": "История операций",
+      "path": "/history"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "История операций",
+      "screen": "История операций",
+      "path": "/history"
+    },
+    {
+      "role": "Сотрудник",
+      "menu": "Программы мотивации",
+      "screen": "Программы мотивации",
+      "path": "/programs"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Программы мотивации",
+      "screen": "Программы мотивации",
+      "path": "/programs"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Моя команда",
+      "screen": "Моя команда",
+      "path": "/team"
+    },
+    {
+      "role": "HR",
+      "menu": "Сотрудники",
+      "screen": "Моя команда",
+      "path": "/team"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Начисление",
+      "screen": "Начисление баллов",
+      "path": "/accruals/new"
+    },
+    {
+      "role": "HR",
+      "menu": "Начисление",
+      "screen": "Начисление баллов",
+      "path": "/accruals/new"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Контроль начислений",
+      "screen": "Контроль начислений",
+      "path": "/control"
+    },
+    {
+      "role": "HR",
+      "menu": "Операции",
+      "screen": "Операции",
+      "path": "/operations"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Операции",
+      "screen": "Операции",
+      "path": "/operations"
+    },
+    {
+      "role": "HR",
+      "menu": "Правила начисления",
+      "screen": "Правила начисления",
+      "path": "/rules"
+    },
+    {
+      "role": "HR",
+      "menu": "Кампании",
+      "screen": "Бонусные кампании",
+      "path": "/campaigns"
+    },
+    {
+      "role": "HR",
+      "menu": "Отчёты",
+      "screen": "Отчёты",
+      "path": "/reports"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Отчёты",
+      "screen": "Отчёты",
+      "path": "/reports"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Аналитика",
+      "screen": "Аналитика",
+      "path": "/analytics"
+    },
+    {
+      "role": "HR",
+      "menu": "Аналитика",
+      "screen": "Аналитика",
+      "path": "/analytics"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Пользователи",
+      "screen": "Пользователи",
+      "path": "/admin/users"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Интеграции",
+      "screen": "Интеграции",
+      "path": "/admin/integrations"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Журнал аудита",
+      "screen": "Журнал аудита",
+      "path": "/admin/audit"
+    },
+    {
+      "role": "Сотрудник",
+      "menu": "Вход в систему (email и пароль или демо-вход)",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Сотрудник",
+      "menu": "Просмотр и отметка уведомлений",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Сотрудник",
+      "menu": "Выход из системы",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Вход в систему (email и пароль или демо-вход)",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Просмотр и отметка уведомлений",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Руководитель",
+      "menu": "Выход из системы",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "HR",
+      "menu": "Вход в систему (email и пароль или демо-вход)",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "HR",
+      "menu": "Просмотр и отметка уведомлений",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "HR",
+      "menu": "Выход из системы",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Вход в систему (email и пароль или демо-вход)",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Просмотр и отметка уведомлений",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Финансовый отдел",
+      "menu": "Выход из системы",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Вход в систему (email и пароль или демо-вход)",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Просмотр и отметка уведомлений",
+      "screen": "—",
+      "path": "—"
+    },
+    {
+      "role": "Администратор",
+      "menu": "Выход из системы",
+      "screen": "—",
+      "path": "—"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "pages/AccrualWizardPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/AnalyticsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/CampaignsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/ControlPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/ForbiddenPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/HistoryPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/LoginPage.tsx",
+      "rawOwn": 7,
+      "samples": [
+        "rgba(255,255,255,.72)",
+        "rgba(255,255,255,.06)",
+        "rgba(255,255,255,.08)",
+        "rgba(255,255,255,.8)",
+        "rgba(255,255,255,.6)"
+      ],
+      "ok": false
+    },
+    {
+      "screen": "pages/MyBalancePage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/NotFoundPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/OperationsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/ProgramsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/ReportsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/RulesPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/TeamPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/admin/AuditPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/admin/IntegrationsPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    },
+    {
+      "screen": "pages/admin/UsersPage.tsx",
+      "rawOwn": 0,
+      "samples": [],
+      "ok": true
+    }
+  ]
+}

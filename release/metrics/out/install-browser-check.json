@@ -1,0 +1,30 @@
+{
+  "date": "25.11.2026, 19:31:54",
+  "base": "http://localhost:8080",
+  "steps": [
+    {
+      "name": "Открыть http://localhost:8080",
+      "sec": 0.73,
+      "detail": "HTTP 200, адрес /login, заголовок «Вход»"
+    },
+    {
+      "name": "Войти как сотрудник",
+      "sec": 1.78,
+      "detail": "адрес /me, «Здравствуйте, Анна», баланс 8 900 Б"
+    },
+    {
+      "name": "Глубокая ссылка: открыть /history и обновить страницу",
+      "sec": 2.44,
+      "detail": "HTTP 200 и 200 (после обновления), заголовок «История операций»"
+    },
+    {
+      "name": "Открыть документацию API /swagger-ui.html",
+      "sec": 0.8,
+      "detail": "HTTP 200, итоговый адрес /swagger-ui/index.html, «TechnoSoft Bonus REST API», операций 34"
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+    "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+  ]
+}

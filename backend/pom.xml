@@ -119,4 +119,42 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Сборка дистрибутива (ЛР 11, release/build-dist.sh): mvn -Pdist clean package.
+             Собранный клиент (frontend/dist, npm run build) встраивается в classpath:/static/ исполняемого архива,
+             имя архива — technosoft-bonus.jar. Папку клиента можно переопределить: -Dclient.dist.dir=... -->
+        <profile>
+            <id>dist</id>
+            <properties>
+                <client.dist.dir>${project.basedir}/../frontend/dist</client.dist.dir>
+            </properties>
+            <build>
+                <finalName>technosoft-bonus</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>embed-client</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${client.dist.dir}</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

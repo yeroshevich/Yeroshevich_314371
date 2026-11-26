@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-25T15:31:31.188Z",
+  "mutants": 14,
+  "killed": 13,
+  "X": 0.93,
+  "results": [
+    {
+      "id": "M01",
+      "killed": true,
+      "sec": 20,
+      "desc": "Списание: «баланс < стоимости» заменено на «≤» (равный стоимости баланс не хватает)",
+      "failedTests": [
+        "RedemptionServiceTest.balanceEqualToCostIsEnough"
+      ]
+    },
+    {
+      "id": "M02",
+      "killed": true,
+      "sec": 16,
+      "desc": "Корректировка: отключено согласование при уходе баланса в минус",
+      "failedTests": [
+        "BusinessFlowSmokeTest.correctionAndReview",
+        "CorrectionServiceTest.cancellationAndPendingAreJournaled",
+        "CorrectionServiceTest.negativeBalanceGoesToApproval"
+      ]
+    },
+    {
+      "id": "M03",
+      "killed": true,
+      "sec": 15,
+      "desc": "Начисление по KPI: порог «<» заменён на «≤»",
+      "failedTests": [
+        "KpiAccrualStrategyTest.proportionalToKpiFromThreshold"
+      ]
+    },
+    {
+      "id": "M04",
+      "killed": true,
+      "sec": 18,
+      "desc": "Кампании (D-1): отключён переход «Запланирована → Активна»",
+      "failedTests": [
+        "CampaignLifecycleServiceTest.boundaryDates",
+        "CampaignLifecycleServiceTest.plannedBecomesActiveOnStartDate",
+        "CampaignLifecycleTest.plannedCampaignAppliesWhenStarted"
+      ]
+    },
+    {
+      "id": "M05",
+      "killed": true,
+      "sec": 246,
+      "desc": "Кампании (D-1): завершение в сам день окончания",
+      "failedTests": [
+        "CampaignLifecycleServiceTest.boundaryDates"
+      ]
+    },
+    {
+      "id": "M06",
+      "killed": true,
+      "sec": 1972,
+      "desc": "Кампании (D-1): список кампаний без синхронизации статусов",
+      "failedTests": [
+        "CampaignLifecycleTest.finishedCampaignIsDeactivated",
+        "CampaignQueryServiceTest.listSynchronizesStatusesBeforeReading"
+      ]
+    },
+    {
+      "id": "M07",
+      "killed": true,
+      "sec": 36,
+      "desc": "Ручное начисление: сумма, равная лимиту, уходит на согласование",
+      "failedTests": [
+        "AccrualServiceTest.exactlyLimitIsAccrued",
+        "BusinessFlowSmokeTest.correctionAndReview"
+      ]
+    },
+    {
+      "id": "M08",
+      "killed": true,
+      "sec": 1471,
+      "desc": "Права: руководитель управляет любым сотрудником",
+      "failedTests": [
+        "AccessPolicyTest.manageScope",
+        "AccrualServiceTest.managerCannotAccrueForeignEmployee",
+        "BusinessFlowSmokeTest.manualAccrualPreviewAndCreate",
+        "CorrectionServiceTest.managerCorrectsOnlyOwnTeam",
+        "RestApiSecurityTest.validationAndDomainErrorsMapToStatusAndCode"
+      ]
+    },
+    {
+      "id": "M09",
+      "killed": true,
+      "sec": 327,
+      "desc": "Расчёт: коэффициент кампании не применяется",
+      "failedTests": [
+        "BonusCalculationServiceTest.appliesActiveCampaignCoefficient",
+        "BonusCalculationServiceTest.skipsCampaignWithoutBudgetLeft",
+        "BonusCalculationServiceTest.unlimitedCampaignDoesNotCheckSpent",
+        "BusinessFlowSmokeTest.calculationMatchesSeedOperations",
+        "BusinessFlowSmokeTest.eventProcessingIsIdempotentAndBatchSurvivesFailures",
+        "CampaignLifecycleTest.plannedCampaignAppliesWhenStarted",
+        "EventProcessingServiceTest.activeRuleAppliesCoefficients",
+        "EventProcessingServiceTest.savesAccrualAfterCalculation"
+      ]
+    },
+    {
+      "id": "M10",
+      "killed": true,
+      "sec": 34,
+      "desc": "Контроль финотдела: подтверждение не меняет баланс",
+      "failedTests": [
+        "BusinessFlowSmokeTest.correctionAndReview",
+        "ReviewServiceTest.approvedAccrualUpdatesBalance",
+        "ReviewServiceTest.secondApprovalIsRejected"
+      ]
+    },
+    {
+      "id": "M11",
+      "killed": true,
+      "sec": 929,
+      "desc": "Аудит: операции не записываются в журнал",
+      "failedTests": [
+        "AuditListenerTest.autoAccrualIsRecordedAsSystem",
+        "AuditListenerTest.correctionIsRecorded",
+        "BusinessFlowSmokeTest.manualAccrualPreviewAndCreate",
+        "RequirementsRestApiTest.correctionIsJournaled"
+      ]
+    },
+    {
+      "id": "M12",
+      "killed": false,
+      "sec": 496,
+      "desc": "Ролевая модель: финотделу открыт «Мой баланс»",
+      "failedTests": []
+    },
+    {
+      "id": "M13",
+      "killed": true,
+      "sec": 34,
+      "desc": "Пользователи: не проверяется дубль email",
+      "failedTests": [
+        "RequirementsRestApiTest.userLifecycle",
+        "UserAdminServiceTest.duplicateEmailIsRejected"
+      ]
+    },
+    {
+      "id": "M14",
+      "killed": true,
+      "sec": 32,
+      "desc": "Интеграции: разрешён адрес HTTP",
+      "failedTests": [
+        "IntegrationAdminServiceTest.connectionTestWithHttpFails",
+        "IntegrationAdminServiceTest.failedCheckDoesNotSave",
+        "RequirementsRestApiTest.integrationSettings",
+        "SimulatedIntegrationProbeTest.nonHttpsRejected"
+      ]
+    }
+  ]
+}

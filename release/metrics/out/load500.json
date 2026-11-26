@@ -1,0 +1,433 @@
+{
+  "summary": {
+    "date": "25.11.2026, 19:39:25",
+    "base": "http://localhost:8080",
+    "pid": "73888",
+    "accounts": 22,
+    "clientsPerRound": 500,
+    "rounds": 3,
+    "successTotal": 1500,
+    "clientsTotal": 1500,
+    "successRate": 1,
+    "worstBalanceP95Ms": 4354.89,
+    "worstTotalP95Ms": 5140.91,
+    "scenarioB": {
+      "successTotal": 1500,
+      "clientsTotal": 1500,
+      "worstBalanceP95Ms": 140.16,
+      "worstWallSec": 0.16
+    },
+    "memory": {
+      "samples": 41,
+      "idle": {
+        "t": 1795624747475,
+        "rssMb": 459.27,
+        "heapUsedMb": 84.97,
+        "heapCommittedMb": 128,
+        "threads": null
+      },
+      "peakHeapUsedMb": 146.28,
+      "peakRssMb": 539.53,
+      "xmxMb": 512,
+      "X_resources": 0.71
+    }
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 5.19,
+      "failures": [],
+      "totalMs": {
+        "p50": 5037.31,
+        "p95": 5140.91,
+        "max": 5144.57
+      },
+      "loginMs": {
+        "p50": 2845.08,
+        "p95": 4880.18
+      },
+      "balanceMs": {
+        "p50": 2192.77,
+        "p95": 4354.89,
+        "max": 4544.85
+      },
+      "throughputClientsPerSec": 96.32
+    },
+    {
+      "round": 2,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 4.81,
+      "failures": [],
+      "totalMs": {
+        "p50": 4732.63,
+        "p95": 4799.79,
+        "max": 4802.17
+      },
+      "loginMs": {
+        "p50": 2613.42,
+        "p95": 4615.12
+      },
+      "balanceMs": {
+        "p50": 2118.24,
+        "p95": 4166.44,
+        "max": 4313.07
+      },
+      "throughputClientsPerSec": 103.92
+    },
+    {
+      "round": 3,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 4.69,
+      "failures": [],
+      "totalMs": {
+        "p50": 4621.68,
+        "p95": 4678.49,
+        "max": 4680.25
+      },
+      "loginMs": {
+        "p50": 2516.56,
+        "p95": 4507
+      },
+      "balanceMs": {
+        "p50": 2100.05,
+        "p95": 4046.77,
+        "max": 4217.45
+      },
+      "throughputClientsPerSec": 106.65
+    }
+  ],
+  "roundsB": [
+    {
+      "round": 1,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 0.13,
+      "balanceMs": {
+        "p50": 60.17,
+        "p95": 116.86,
+        "max": 120.47
+      }
+    },
+    {
+      "round": 2,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 0.16,
+      "balanceMs": {
+        "p50": 107.58,
+        "p95": 140.16,
+        "max": 146.13
+      }
+    },
+    {
+      "round": 3,
+      "clients": 500,
+      "success": 500,
+      "successRate": 1,
+      "wallSec": 0.13,
+      "balanceMs": {
+        "p50": 51.99,
+        "p95": 113.3,
+        "max": 116.59
+      }
+    }
+  ],
+  "memory": [
+    {
+      "t": 1795624747146,
+      "rssMb": 459.27,
+      "heapUsedMb": 84.97,
+      "heapCommittedMb": 128,
+      "threads": null
+    },
+    {
+      "t": 1795624747475,
+      "rssMb": 459.27,
+      "heapUsedMb": 84.97,
+      "heapCommittedMb": 128,
+      "threads": null
+    },
+    {
+      "t": 1795624748066,
+      "rssMb": 459.27,
+      "heapUsedMb": 102.97,
+      "heapCommittedMb": 128,
+      "threads": null
+    },
+    {
+      "t": 1795624748520,
+      "rssMb": 466.98,
+      "heapUsedMb": 114.97,
+      "heapCommittedMb": 128,
+      "threads": null
+    },
+    {
+      "t": 1795624748916,
+      "rssMb": 485.44,
+      "heapUsedMb": 79.71,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624749352,
+      "rssMb": 496.72,
+      "heapUsedMb": 87.71,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624750062,
+      "rssMb": 498.69,
+      "heapUsedMb": 103.71,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624750522,
+      "rssMb": 498.83,
+      "heapUsedMb": 113.71,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624751029,
+      "rssMb": 501.7,
+      "heapUsedMb": 78.56,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624751638,
+      "rssMb": 501.73,
+      "heapUsedMb": 93.56,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624752218,
+      "rssMb": 501.86,
+      "heapUsedMb": 105.56,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624752665,
+      "rssMb": 501.92,
+      "heapUsedMb": 90.9,
+      "heapCommittedMb": 136,
+      "threads": null
+    },
+    {
+      "t": 1795624753270,
+      "rssMb": 525.84,
+      "heapUsedMb": 120.74,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624753788,
+      "rssMb": 526.8,
+      "heapUsedMb": 79.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624754297,
+      "rssMb": 526.8,
+      "heapUsedMb": 93.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624754688,
+      "rssMb": 526.84,
+      "heapUsedMb": 102.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624755124,
+      "rssMb": 528.05,
+      "heapUsedMb": 111.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624755540,
+      "rssMb": 528.05,
+      "heapUsedMb": 122.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624755948,
+      "rssMb": 528.08,
+      "heapUsedMb": 130.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624756440,
+      "rssMb": 528.08,
+      "heapUsedMb": 143.5,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624756885,
+      "rssMb": 528.13,
+      "heapUsedMb": 76.55,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624757287,
+      "rssMb": 528.13,
+      "heapUsedMb": 84.55,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624757673,
+      "rssMb": 528.13,
+      "heapUsedMb": 143.58,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624758379,
+      "rssMb": 528.16,
+      "heapUsedMb": 93.97,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624759056,
+      "rssMb": 528.16,
+      "heapUsedMb": 109.97,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624759512,
+      "rssMb": 528.25,
+      "heapUsedMb": 122.97,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624759974,
+      "rssMb": 528.25,
+      "heapUsedMb": 130.97,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624760390,
+      "rssMb": 528.25,
+      "heapUsedMb": 142.97,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624760990,
+      "rssMb": 528.63,
+      "heapUsedMb": 79.29,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624761406,
+      "rssMb": 528.77,
+      "heapUsedMb": 90.29,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624761925,
+      "rssMb": 528.77,
+      "heapUsedMb": 101.29,
+      "heapCommittedMb": 160,
+      "threads": null
+    },
+    {
+      "t": 1795624762326,
+      "rssMb": 528.77,
+      "heapUsedMb": 143.48,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624762620,
+      "rssMb": 538.97,
+      "heapUsedMb": 102.39,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624762915,
+      "rssMb": 538.97,
+      "heapUsedMb": 103.39,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624763209,
+      "rssMb": 538.97,
+      "heapUsedMb": 104.39,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624763504,
+      "rssMb": 538.97,
+      "heapUsedMb": 105.39,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624763871,
+      "rssMb": 539.09,
+      "heapUsedMb": 146.28,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624764171,
+      "rssMb": 539.53,
+      "heapUsedMb": 109.83,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624764502,
+      "rssMb": 539.53,
+      "heapUsedMb": 109.83,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624764825,
+      "rssMb": 539.53,
+      "heapUsedMb": 109.83,
+      "heapCommittedMb": 170,
+      "threads": null
+    },
+    {
+      "t": 1795624765148,
+      "rssMb": 539.53,
+      "heapUsedMb": 109.83,
+      "heapCommittedMb": 170,
+      "threads": null
+    }
+  ]
+}

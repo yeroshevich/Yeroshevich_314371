@@ -1,0 +1,46 @@
+TechnoSoft Bonus: http://localhost:8080  (БД localhost:5432/technosoft_bonus, пользователь valeriyyerashevich)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.3.13)
+
+2026-11-25T19:28:55.158+03:00  INFO 73466 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : Starting BonusApplication v0.1.0-SNAPSHOT using Java 21 with PID 73466 (/private/tmp/claude-501/-Users-valeriyyerashevich-SITES-snow2027-------------2---------46-1-12-/039bccbc-1edb-42f5-980e-d76e69a6938f/scratchpad/install-final/TechnoSoftBonus-1.0/app/technosoft-bonus.jar started by valeriyyerashevich in /private/tmp/claude-501/-Users-valeriyyerashevich-SITES-snow2027-------------2---------46-1-12-/039bccbc-1edb-42f5-980e-d76e69a6938f/scratchpad/install-final/TechnoSoftBonus-1.0)
+2026-11-25T19:28:55.159+03:00  INFO 73466 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-11-25T19:28:55.745+03:00  INFO 73466 --- [technosoft-bonus] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-25T19:28:55.814+03:00  INFO 73466 --- [technosoft-bonus] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 63 ms. Found 17 JPA repository interfaces.
+2026-11-25T19:28:56.486+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-11-25T19:28:56.507+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-25T19:28:56.507+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.42]
+2026-11-25T19:28:56.546+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-25T19:28:56.547+03:00  INFO 73466 --- [technosoft-bonus] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1368 ms
+2026-11-25T19:28:56.944+03:00  INFO 73466 --- [technosoft-bonus] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-25T19:28:57.132+03:00  INFO 73466 --- [technosoft-bonus] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@43b6cb1c
+2026-11-25T19:28:57.135+03:00  INFO 73466 --- [technosoft-bonus] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-25T19:28:57.186+03:00  INFO 73466 --- [technosoft-bonus] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/technosoft_bonus (PostgreSQL 14.18)
+2026-11-25T19:28:57.267+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.050s)
+2026-11-25T19:28:57.290+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2026-11-25T19:28:57.296+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-25T19:28:57.451+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-11-25T19:28:57.543+03:00  INFO 73466 --- [technosoft-bonus] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-11-25T19:28:57.597+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-11-25T19:28:58.155+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-25T19:28:59.906+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-25T19:28:59.953+03:00  INFO 73466 --- [technosoft-bonus] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-25T19:29:00.201+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-25T19:29:01.751+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-11-25T19:29:01.919+03:00  INFO 73466 --- [technosoft-bonus] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-11-25T19:29:01.925+03:00  INFO 73466 --- [technosoft-bonus] [           main] by.technosoft.bonus.BonusApplication     : Started BonusApplication in 6.992 seconds (process running for 7.192)
+2026-11-25T19:29:01.979+03:00  INFO 73466 --- [technosoft-bonus] [           main] .t.b.c.CampaignLifecycleSchedulingConfig : Синхронизация статусов кампаний при старте приложения: изменено 0
+2026-11-25T19:29:02.001+03:00  INFO 73466 --- [technosoft-bonus] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-25T19:29:02.002+03:00  INFO 73466 --- [technosoft-bonus] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-25T19:29:02.002+03:00  INFO 73466 --- [technosoft-bonus] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-11-25T19:29:02.588+03:00  INFO 73466 --- [technosoft-bonus] [nio-8080-exec-3] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 211 ms
+2026-11-25T19:31:54.178+03:00  INFO 73466 --- [technosoft-bonus] [io-8080-exec-10] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 111 ms
+2026-11-25T19:31:54.873+03:00  INFO 73466 --- [technosoft-bonus] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-25T19:31:54.874+03:00  INFO 73466 --- [technosoft-bonus] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-25T19:31:54.876+03:00  INFO 73466 --- [technosoft-bonus] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

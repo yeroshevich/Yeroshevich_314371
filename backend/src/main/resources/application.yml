@@ -50,6 +50,11 @@ bonus:
   event-scheduler:
     enabled: false                # периодический запуск processPending(); включить: BONUS_EVENT_SCHEDULER_ENABLED=true
     delay: PT1M
+  campaign-lifecycle:
+    # Смена статусов кампаний по датам (planned → active → finished, D-1): при старте приложения и ежедневно.
+    # Кроме того, статусы актуализируются перед чтением списка кампаний и перед автоматической обработкой событий.
+    enabled: true                 # отключить запуск по расписанию и при старте: BONUS_CAMPAIGNLIFECYCLE_ENABLED=false
+    cron: "0 0 0 * * *"           # ежедневно в 00:00 по часовому поясу bonus.zone
   security:
     jwt:
       # Секрет подписи HS256 (не короче 32 байт). В эксплуатации задаётся переменной окружения BONUS_JWT_SECRET.

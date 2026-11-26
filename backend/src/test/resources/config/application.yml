@@ -1,0 +1,8 @@
+# Дополнение к основному application.yml только для тестов (Spring Boot читает classpath:/config/application.yml
+# поверх classpath:/application.yml). Синхронизация статусов кампаний при старте контекста и по расписанию
+# выполняется вне тестовой транзакции и зафиксировала бы изменения в демо-БД (особенно в тестах с часами,
+# переведёнными вперёд), поэтому в тестах она отключена. Сам механизм проверяют CampaignLifecycleServiceTest,
+# CampaignLifecycleSchedulingConfigTest и CampaignLifecycleTest (вызов в транзакции теста, с откатом).
+bonus:
+  campaign-lifecycle:
+    enabled: false

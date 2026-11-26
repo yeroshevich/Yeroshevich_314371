@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-25T13:10:15.591Z",
+  "killedPid": 61980,
+  "acked": 2219,
+  "foundAfterRestart": 2219,
+  "balanceMismatches": 0,
+  "restartSec": 3.26,
+  "opsBefore": 159,
+  "opsAfter": 2380,
+  "backupRestore": {
+    "sourceRows": 7205,
+    "restoredRows": 7205,
+    "restoreSec": 0.62
+  },
+  "X_crash": 1,
+  "X_backup": 1
+}

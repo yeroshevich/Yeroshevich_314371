@@ -3,6 +3,7 @@ package by.technosoft.bonus.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +42,18 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
     @Query("select c from Campaign c where c.id = :id")
     Optional<Campaign> findWithTargetsById(@Param("id") Long id);
 
+    /**
+     * Кандидаты на смену статуса по датам (дефект D-1): кампании в статусах {@code statuses},
+     * начавшиеся не позже {@code date}. Кампании, которые ещё не начались, статус не меняют.
+     */
+    @Query("""
+            select c from Campaign c
+            where c.status in :statuses and c.startDate <= :date
+            order by c.id
+            """)
+    List<Campaign> findStartedInStatuses(@Param("statuses") Collection<CampaignStatus> statuses,
+                                         @Param("date") LocalDate date);
+
     // ── Изменения (UC9): явные SQL-команды, доменная сущность не меняется. ──
 
     @Query(value = "select nextval(pg_get_serial_sequence('campaign', 'id'))", nativeQuery = true)
@@ -68,6 +81,18 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
                @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate,
                @Param("coefficient") BigDecimal coefficient, @Param("budget") Integer budget,
                @Param("status") String status);
+
+    /**
+     * Смена статуса кампании, только если он всё ещё {@code fromStatus} (условное обновление):
+     * при одновременной синхронизации переход выполнит одна транзакция, вторая получит 0 строк.
+     *
+     * @return число изменённых строк (0 или 1)
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "update campaign set status = :toStatus where id = :id and status = :fromStatus",
+            nativeQuery = true)
+    int updateStatus(@Param("id") long id, @Param("fromStatus") String fromStatus,
+                     @Param("toStatus") String toStatus);
 
     /** Удаление кампании; целевые подразделения удаляются каскадно (ON DELETE CASCADE). */
     @Modifying(flushAutomatically = true, clearAutomatically = true)

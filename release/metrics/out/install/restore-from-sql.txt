@@ -1,0 +1,9 @@
+Сервер PostgreSQL: localhost:5432, пользователь valeriyyerashevich, база данных technosoft_bonus_sqltest
+1/3 Создание БД technosoft_bonus_sqltest (UTF8)
+2/3 Восстановление из db/technosoft_bonus.sql (psql)
+3/3 Проверка
+версия схемы 2
+сотрудников 26
+учётных записей 26
+операций 153
+Готово. БД technosoft_bonus_sqltest восстановлена; запуск сервера — start.sh.

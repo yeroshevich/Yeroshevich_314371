@@ -1,0 +1,1319 @@
+{
+  "summary": {
+    "date": "25.11.2026, 16:26:04",
+    "base": "http://localhost:8080",
+    "screens": 15,
+    "formsOpened": 5,
+    "formErrors": [
+      "Начисление баллов / Мастер начисления, шаг 2: locator.check: Timeout 30000ms exceeded."
+    ],
+    "controls": 63,
+    "withVisibleLabel": 40,
+    "withAccessibleNameOnly": 21,
+    "X_understandability": 0.63,
+    "withoutVisibleLabel": [
+      {
+        "screen": "История операций",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Период",
+        "placeholder": "Период с",
+        "inTable": false
+      },
+      {
+        "screen": "История операций",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Период",
+        "placeholder": "по",
+        "inTable": false
+      },
+      {
+        "screen": "Моя команда",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Поиск сотрудника",
+        "placeholder": "Поиск по имени или должности",
+        "inTable": false
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Поиск сотрудника",
+        "placeholder": "Поиск по имени, должности, отделу",
+        "inTable": false
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Select all",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Анна Ковалёва",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Артём Василевич",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Глеб Сорокин",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Екатерина Шевчук",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Максим Новик",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Никита Гончаров",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Начисление баллов",
+        "form": null,
+        "kind": "input:checkbox",
+        "ariaLabel": "Выбрать: Юлия Романович",
+        "placeholder": null,
+        "inTable": true
+      },
+      {
+        "screen": "Операции",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Поиск по операциям",
+        "placeholder": "Сотрудник, номер или причина",
+        "inTable": false
+      },
+      {
+        "screen": "Операции",
+        "form": null,
+        "kind": "combobox",
+        "ariaLabel": "Подразделение",
+        "placeholder": "Все подразделения",
+        "inTable": false
+      },
+      {
+        "screen": "Операции",
+        "form": null,
+        "kind": "combobox",
+        "ariaLabel": "Статус",
+        "placeholder": "Все статусы",
+        "inTable": false
+      },
+      {
+        "screen": "Операции",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Период",
+        "placeholder": "Период с",
+        "inTable": false
+      },
+      {
+        "screen": "Операции",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Период",
+        "placeholder": "по",
+        "inTable": false
+      },
+      {
+        "screen": "Пользователи",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Поиск пользователя",
+        "placeholder": "Имя, email или должность",
+        "inTable": false
+      },
+      {
+        "screen": "Пользователи",
+        "form": null,
+        "kind": "combobox",
+        "ariaLabel": "Роль",
+        "placeholder": "Все роли",
+        "inTable": false
+      },
+      {
+        "screen": "Журнал аудита",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": "Поиск в журнале",
+        "placeholder": "Пользователь, объект или IP",
+        "inTable": false
+      },
+      {
+        "screen": "Журнал аудита",
+        "form": null,
+        "kind": "combobox",
+        "ariaLabel": "Действие",
+        "placeholder": "Все действия",
+        "inTable": false
+      },
+      {
+        "screen": "Журнал аудита",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": null,
+        "placeholder": "Период с",
+        "inTable": false
+      },
+      {
+        "screen": "Журнал аудита",
+        "form": null,
+        "kind": "input:text",
+        "ariaLabel": null,
+        "placeholder": "по",
+        "inTable": false
+      }
+    ],
+    "overflowPairs": 60,
+    "overflowOk": 60,
+    "X_adaptability": 1,
+    "overflowFailures": []
+  },
+  "controls": [
+    {
+      "screen": "Вход",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Email",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "name@technosoft.by",
+      "inTable": false
+    },
+    {
+      "screen": "Вход",
+      "form": null,
+      "kind": "input:password",
+      "visibleLabel": "Пароль",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "История операций",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Период",
+      "placeholder": "Период с",
+      "inTable": false
+    },
+    {
+      "screen": "История операций",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Период",
+      "placeholder": "по",
+      "inTable": false
+    },
+    {
+      "screen": "Моя команда",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Поиск сотрудника",
+      "placeholder": "Поиск по имени или должности",
+      "inTable": false
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Поиск сотрудника",
+      "placeholder": "Поиск по имени, должности, отделу",
+      "inTable": false
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Select all",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Анна Ковалёва",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Артём Василевич",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Глеб Сорокин",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Екатерина Шевчук",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Максим Новик",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Никита Гончаров",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "form": null,
+      "kind": "input:checkbox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Выбрать: Юлия Романович",
+      "placeholder": null,
+      "inTable": true
+    },
+    {
+      "screen": "Контроль начислений",
+      "form": "Заблокировать",
+      "kind": "textarea",
+      "visibleLabel": "Причина блокировки",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: нет подтверждённого результата (BR-5)",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Поиск по операциям",
+      "placeholder": "Сотрудник, номер или причина",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": null,
+      "kind": "combobox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Подразделение",
+      "placeholder": "Все подразделения",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": null,
+      "kind": "combobox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Статус",
+      "placeholder": "Все статусы",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Период",
+      "placeholder": "Период с",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Период",
+      "placeholder": "по",
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": "Корректировать",
+      "kind": "input:radio",
+      "visibleLabel": "Что сделать",
+      "how": "подпись поля формы",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": "Корректировать",
+      "kind": "input:radio",
+      "visibleLabel": "Что сделать",
+      "how": "подпись поля формы",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": "Корректировать",
+      "kind": "spinbutton",
+      "visibleLabel": "Новая сумма",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Операции",
+      "form": "Корректировать",
+      "kind": "textarea",
+      "visibleLabel": "Причина корректировки",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: KPI учтён дважды",
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "input:text",
+      "visibleLabel": "Название",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: Выполнение плана спринта",
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "input:text",
+      "visibleLabel": "Показатель KPI",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: Закрытые задачи спринта, %",
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "spinbutton",
+      "visibleLabel": "База",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "spinbutton",
+      "visibleLabel": "Вес показателя",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "combobox",
+      "visibleLabel": "Периодичность",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "spinbutton",
+      "visibleLabel": "Порог срабатывания",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Правила начисления",
+      "form": "Новое правило",
+      "kind": "switch",
+      "visibleLabel": "Правило применяется",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "input:text",
+      "visibleLabel": "Название",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: Двойные баллы за релиз",
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "textarea",
+      "visibleLabel": "Условия для сотрудников (необязательно)",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "За что и как начисляются баллы",
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "input:text",
+      "visibleLabel": "Сроки",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Начало",
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "input:text",
+      "visibleLabel": "Сроки",
+      "how": "подпись поля формы",
+      "ariaLabel": null,
+      "placeholder": "Окончание",
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "combobox",
+      "visibleLabel": "Отделы",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Кого касается кампания",
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "spinbutton",
+      "visibleLabel": "Коэффициент",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Бонусные кампании",
+      "form": "Новая кампания",
+      "kind": "spinbutton",
+      "visibleLabel": "Бюджет (необязательно)",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Не выделен",
+      "inTable": false
+    },
+    {
+      "screen": "Отчёты",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Период",
+      "how": "подпись поля формы",
+      "ariaLabel": null,
+      "placeholder": "Start date",
+      "inTable": false
+    },
+    {
+      "screen": "Отчёты",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Период",
+      "how": "подпись поля формы",
+      "ariaLabel": null,
+      "placeholder": "End date",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Поиск пользователя",
+      "placeholder": "Имя, email или должность",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": null,
+      "kind": "combobox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Роль",
+      "placeholder": "Все роли",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": "Добавить пользователя",
+      "kind": "input:text",
+      "visibleLabel": "ФИО",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Например: Анна Ковалёва",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": "Добавить пользователя",
+      "kind": "input:text",
+      "visibleLabel": "Корпоративный email",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "name@technosoft.by",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": "Добавить пользователя",
+      "kind": "combobox",
+      "visibleLabel": "Подразделение",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": "Выберите подразделение",
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": "Добавить пользователя",
+      "kind": "input:text",
+      "visibleLabel": "Должность",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Пользователи",
+      "form": "Добавить пользователя",
+      "kind": "combobox",
+      "visibleLabel": "Роль",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Адрес API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:password",
+      "visibleLabel": "Ключ API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "switch",
+      "visibleLabel": "Автоматическая синхронизация",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Адрес API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:password",
+      "visibleLabel": "Ключ API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "switch",
+      "visibleLabel": "Автоматическая синхронизация",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Адрес API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:password",
+      "visibleLabel": "Ключ API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "switch",
+      "visibleLabel": "Автоматическая синхронизация",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": "Адрес API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "input:password",
+      "visibleLabel": "Ключ API",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Интеграции",
+      "form": null,
+      "kind": "switch",
+      "visibleLabel": "Автоматическая синхронизация",
+      "how": "label[for]",
+      "ariaLabel": null,
+      "placeholder": null,
+      "inTable": false
+    },
+    {
+      "screen": "Журнал аудита",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Поиск в журнале",
+      "placeholder": "Пользователь, объект или IP",
+      "inTable": false
+    },
+    {
+      "screen": "Журнал аудита",
+      "form": null,
+      "kind": "combobox",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": "Действие",
+      "placeholder": "Все действия",
+      "inTable": false
+    },
+    {
+      "screen": "Журнал аудита",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": null,
+      "placeholder": "Период с",
+      "inTable": false
+    },
+    {
+      "screen": "Журнал аудита",
+      "form": null,
+      "kind": "input:text",
+      "visibleLabel": null,
+      "how": null,
+      "ariaLabel": null,
+      "placeholder": "по",
+      "inTable": false
+    }
+  ],
+  "overflow": [
+    {
+      "screen": "Вход",
+      "path": "/login",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Мой баланс",
+      "path": "/me",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "История операций",
+      "path": "/history",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Программы мотивации",
+      "path": "/programs",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Моя команда",
+      "path": "/team",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "path": "/accruals/new",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Контроль начислений",
+      "path": "/control",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Операции",
+      "path": "/operations",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Правила начисления",
+      "path": "/rules",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Бонусные кампании",
+      "path": "/campaigns",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Отчёты",
+      "path": "/reports",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Аналитика",
+      "path": "/analytics",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Пользователи",
+      "path": "/admin/users",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Интеграции",
+      "path": "/admin/integrations",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Журнал аудита",
+      "path": "/admin/audit",
+      "width": 375,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "ok": true
+    },
+    {
+      "screen": "Вход",
+      "path": "/login",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Мой баланс",
+      "path": "/me",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "История операций",
+      "path": "/history",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Программы мотивации",
+      "path": "/programs",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Моя команда",
+      "path": "/team",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "path": "/accruals/new",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Контроль начислений",
+      "path": "/control",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Операции",
+      "path": "/operations",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Правила начисления",
+      "path": "/rules",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Бонусные кампании",
+      "path": "/campaigns",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Отчёты",
+      "path": "/reports",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Аналитика",
+      "path": "/analytics",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Пользователи",
+      "path": "/admin/users",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Интеграции",
+      "path": "/admin/integrations",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Журнал аудита",
+      "path": "/admin/audit",
+      "width": 768,
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "ok": true
+    },
+    {
+      "screen": "Вход",
+      "path": "/login",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Мой баланс",
+      "path": "/me",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "История операций",
+      "path": "/history",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Программы мотивации",
+      "path": "/programs",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Моя команда",
+      "path": "/team",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "path": "/accruals/new",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Контроль начислений",
+      "path": "/control",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Операции",
+      "path": "/operations",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Правила начисления",
+      "path": "/rules",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Бонусные кампании",
+      "path": "/campaigns",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Отчёты",
+      "path": "/reports",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Аналитика",
+      "path": "/analytics",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Пользователи",
+      "path": "/admin/users",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Интеграции",
+      "path": "/admin/integrations",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Журнал аудита",
+      "path": "/admin/audit",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "innerWidth": 1024,
+      "ok": true
+    },
+    {
+      "screen": "Вход",
+      "path": "/login",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Мой баланс",
+      "path": "/me",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "История операций",
+      "path": "/history",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Программы мотивации",
+      "path": "/programs",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Моя команда",
+      "path": "/team",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Начисление баллов",
+      "path": "/accruals/new",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Контроль начислений",
+      "path": "/control",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Операции",
+      "path": "/operations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Правила начисления",
+      "path": "/rules",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Бонусные кампании",
+      "path": "/campaigns",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Отчёты",
+      "path": "/reports",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Аналитика",
+      "path": "/analytics",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Пользователи",
+      "path": "/admin/users",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Интеграции",
+      "path": "/admin/integrations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    },
+    {
+      "screen": "Журнал аудита",
+      "path": "/admin/audit",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "date": "25.11.2026, 19:39:30",
+  "base": "http://localhost:8080",
+  "concurrency": 20,
+  "recipientsPerRequest": 25,
+  "massRequests": 20,
+  "massStatuses": [
+    201
+  ],
+  "operationsCreated": 500,
+  "massWallSec": 0.27,
+  "massRequestP95Ms": 256.94,
+  "background": {
+    "n": 136,
+    "p95": 6.43,
+    "max": 7.89
+  },
+  "massErrors": [],
+  "probeErrors": [],
+  "duringMass": {
+    "n": 34,
+    "p95": 6.66,
+    "max": 8.87,
+    "over2s": 0
+  },
+  "perf3Met": true
+}

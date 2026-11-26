@@ -1,0 +1,2 @@
+GET :8081/api/v1/accounts/me с токеном :8080 → HTTP 200
+servers в OpenAPI экземпляра 8081: [{"url":"http://localhost:8080","description":"Локальный сервер"}]

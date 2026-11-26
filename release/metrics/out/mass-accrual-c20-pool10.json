@@ -1,0 +1,154 @@
+{
+  "date": "25.11.2026, 16:22:27",
+  "base": "http://localhost:8080",
+  "concurrency": 20,
+  "recipientsPerRequest": 25,
+  "massRequests": 20,
+  "massStatuses": [
+    0,
+    500
+  ],
+  "operationsCreated": 0,
+  "massWallSec": 60.01,
+  "massRequestP95Ms": 60004.37,
+  "background": {
+    "n": 128,
+    "p95": 6.29,
+    "max": 8.21
+  },
+  "massErrors": [
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60003.45
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.66
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60003.64
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60003.8
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60003.92
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30041.52
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.53
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60003.97
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60004.05
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60004.16
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60004.26
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30039.81
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60004.37
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.96
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.56
+    },
+    {
+      "status": 0,
+      "error": "TimeoutError",
+      "ms": 60004.51
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30038.81
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30039.11
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.59
+    },
+    {
+      "status": 500,
+      "code": "INTERNAL_ERROR",
+      "ms": 30040.2
+    }
+  ],
+  "probeErrors": [
+    {
+      "status": 500,
+      "ms": 30018.08
+    },
+    {
+      "status": 500,
+      "ms": 30017.97
+    },
+    {
+      "status": 500,
+      "ms": 30017.77
+    },
+    {
+      "status": 500,
+      "ms": 30016.55
+    },
+    {
+      "status": 500,
+      "ms": 30026.59
+    },
+    {
+      "status": 500,
+      "ms": 30026.81
+    }
+  ],
+  "duringMass": {
+    "n": 8,
+    "p95": 30026.81,
+    "max": 30026.81,
+    "over2s": 6
+  },
+  "perf3Met": false
+}

@@ -1,0 +1,32 @@
+{
+  "date": "25.11.2026, 19:41:37",
+  "db": "technosoft_bonus",
+  "nfr3": {
+    "operationsAfterInstall": 543,
+    "audited": 543,
+    "X": 1,
+    "byType": [
+      {
+        "type": "accrual",
+        "operations": 534,
+        "audited": 534
+      },
+      {
+        "type": "correction",
+        "operations": 4,
+        "audited": 4
+      },
+      {
+        "type": "writeoff",
+        "operations": 5,
+        "audited": 5
+      }
+    ]
+  },
+  "nfr4": {
+    "operationsFromEvents": 124,
+    "eventsWithSeveralOperations": 0,
+    "duplicateEventRejected": true,
+    "duplicateMessage": "ERROR:  duplicate key value violates unique constraint \"business_event_integration_id_external_id_key\""
+  }
+}

@@ -13,45 +13,58 @@ import by.technosoft.bonus.domain.OperationStatus;
 import by.technosoft.bonus.repository.AmountByKey;
 import by.technosoft.bonus.repository.CampaignRepository;
 import by.technosoft.bonus.repository.OperationRepository;
+import by.technosoft.bonus.service.campaign.CampaignLifecycleService;
 import by.technosoft.bonus.service.exception.ObjectNotFoundException;
 
-/** Чтение бонусных кампаний (UC9) с израсходованным бюджетом. */
+/**
+ * Чтение бонусных кампаний (UC9) с израсходованным бюджетом.
+ * Перед чтением статусы кампаний приводятся к текущей дате ({@link CampaignLifecycleService}, D-1),
+ * поэтому {@link #list()} и {@link #get(Long)} выполняются в транзакции на запись.
+ */
 @Service
 @Transactional(readOnly = true)
 public class CampaignQueryService {
 
     /** Израсходовано — проведённые начисления по кампании (accrued, corrected). */
-<span class="fc" id="L24">    static final EnumSet&lt;OperationStatus&gt; SPENT_STATUSES = EnumSet.of(OperationStatus.ACCRUED, OperationStatus.CORRECTED);</span>
+<span class="fc" id="L29">    static final EnumSet&lt;OperationStatus&gt; SPENT_STATUSES = EnumSet.of(OperationStatus.ACCRUED, OperationStatus.CORRECTED);</span>
 
     /** Кампания (целевые подразделения загружены) и израсходованные баллы. */
-<span class="fc" id="L27">    public record CampaignEntry(Campaign campaign, int spent) {</span>
+<span class="fc" id="L32">    public record CampaignEntry(Campaign campaign, int spent) {</span>
     }
 
     private final CampaignRepository campaignRepository;
     private final OperationRepository operationRepository;
+    private final CampaignLifecycleService campaignLifecycleService;
 
-<span class="fc" id="L33">    public CampaignQueryService(CampaignRepository campaignRepository, OperationRepository operationRepository) {</span>
-<span class="fc" id="L34">        this.campaignRepository = campaignRepository;</span>
-<span class="fc" id="L35">        this.operationRepository = operationRepository;</span>
-<span class="fc" id="L36">    }</span>
+    public CampaignQueryService(CampaignRepository campaignRepository, OperationRepository operationRepository,
+<span class="fc" id="L40">                                CampaignLifecycleService campaignLifecycleService) {</span>
+<span class="fc" id="L41">        this.campaignRepository = campaignRepository;</span>
+<span class="fc" id="L42">        this.operationRepository = operationRepository;</span>
+<span class="fc" id="L43">        this.campaignLifecycleService = campaignLifecycleService;</span>
+<span class="fc" id="L44">    }</span>
 
-    /** Все кампании, новые сверху. */
+    /** Все кампании с актуальным статусом, новые сверху. */
+    @Transactional
     public List&lt;CampaignEntry&gt; list() {
-<span class="fc" id="L40">        Map&lt;Long, Long&gt; spent = spentByCampaign();</span>
-<span class="fc" id="L41">        return campaignRepository.findAllWithTargets().stream()</span>
-<span class="fc" id="L42">                .map(c -&gt; new CampaignEntry(c, spent.getOrDefault(c.getId(), 0L).intValue()))</span>
-<span class="fc" id="L43">                .toList();</span>
+<span class="fc" id="L49">        campaignLifecycleService.synchronizeToday();</span>
+<span class="fc" id="L50">        Map&lt;Long, Long&gt; spent = spentByCampaign();</span>
+<span class="fc" id="L51">        return campaignRepository.findAllWithTargets().stream()</span>
+<span class="fc" id="L52">                .map(c -&gt; new CampaignEntry(c, spent.getOrDefault(c.getId(), 0L).intValue()))</span>
+<span class="fc" id="L53">                .toList();</span>
     }
 
+    /** Кампания с актуальным статусом. */
+    @Transactional
     public CampaignEntry get(Long id) {
-<span class="fc" id="L47">        Campaign campaign = campaignRepository.findWithTargetsById(id)</span>
-<span class="pc" id="L48">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Кампания не найдена. Обновите список.&quot;));</span>
-<span class="fc" id="L49">        return new CampaignEntry(campaign, (int) operationRepository.sumAmountByCampaign(id, SPENT_STATUSES));</span>
+<span class="fc" id="L59">        campaignLifecycleService.synchronizeToday();</span>
+<span class="fc" id="L60">        Campaign campaign = campaignRepository.findWithTargetsById(id)</span>
+<span class="pc" id="L61">                .orElseThrow(() -&gt; new ObjectNotFoundException(&quot;Кампания не найдена. Обновите список.&quot;));</span>
+<span class="fc" id="L62">        return new CampaignEntry(campaign, (int) operationRepository.sumAmountByCampaign(id, SPENT_STATUSES));</span>
     }
 
     Map&lt;Long, Long&gt; spentByCampaign() {
-<span class="fc" id="L53">        return operationRepository.sumAmountGroupedByCampaign(SPENT_STATUSES).stream()</span>
-<span class="fc" id="L54">                .collect(Collectors.toMap(AmountByKey::key, AmountByKey::amount));</span>
+<span class="fc" id="L66">        return operationRepository.sumAmountGroupedByCampaign(SPENT_STATUSES).stream()</span>
+<span class="fc" id="L67">                .collect(Collectors.toMap(AmountByKey::key, AmountByKey::amount));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

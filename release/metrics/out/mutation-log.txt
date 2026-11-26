@@ -1,0 +1,73 @@
+Исходная копия: mvn test
+    80c80
+    <         if (account.getBalance() < cost) {
+    ---
+    >         if (account.getBalance() <= cost) {
+M01 ОБНАРУЖЕНО (20 с): Списание: «баланс < стоимости» заменено на «≤» (равный стоимости баланс не хватает) — RedemptionServiceTest.balanceEqualToCostIsEnough
+    96c96
+    <         boolean needsApproval = account.getBalance() + delta < 0;
+    ---
+    >         boolean needsApproval = false;
+M02 ОБНАРУЖЕНО (16 с): Корректировка: отключено согласование при уходе баланса в минус — BusinessFlowSmokeTest.correctionAndReview;CorrectionServiceTest.cancellationAndPendingAreJournaled;CorrectionServiceTest.negativeBalanceGoesToApproval
+    39c39
+    <         if (kpiValue.compareTo(rule.getThreshold()) < 0) {
+    ---
+    >         if (kpiValue.compareTo(rule.getThreshold()) <= 0) {
+M03 ОБНАРУЖЕНО (15 с): Начисление по KPI: порог «<» заменён на «≤» — KpiAccrualStrategyTest.proportionalToKpiFromThreshold
+    118c118
+    <         if (status == CampaignStatus.PLANNED && !today.isBefore(startDate)) {
+    ---
+    >         if (false) {
+M04 ОБНАРУЖЕНО (18 с): Кампании (D-1): отключён переход «Запланирована → Активна» — CampaignLifecycleServiceTest.boundaryDates;CampaignLifecycleServiceTest.plannedBecomesActiveOnStartDate;CampaignLifecycleTest.plannedCampaignAppliesWhenStarted
+    115c115
+    <         if (today.isAfter(endDate)) {
+    ---
+    >         if (!today.isBefore(endDate)) {
+M05 ОБНАРУЖЕНО (246 с): Кампании (D-1): завершение в сам день окончания — CampaignLifecycleServiceTest.boundaryDates
+    49c49
+    <         campaignLifecycleService.synchronizeToday();
+    ---
+    >         // mutant
+M06 ОБНАРУЖЕНО (1972 с): Кампании (D-1): список кампаний без синхронизации статусов — CampaignLifecycleTest.finishedCampaignIsDeactivated;CampaignQueryServiceTest.listSynchronizesStatusesBeforeReading
+    179c179
+    <                     calc.coefficient(), calc.campaignId(), calc.total(), calc.total() > limit));
+    ---
+    >                     calc.coefficient(), calc.campaignId(), calc.total(), calc.total() >= limit));
+M07 ОБНАРУЖЕНО (36 с): Ручное начисление: сумма, равная лимиту, уходит на согласование — AccrualServiceTest.exactlyLimitIsAccrued;BusinessFlowSmokeTest.correctionAndReview
+    56c56
+    <         if (role == RoleCode.MANAGER && employee.isManagedBy(actor.getEmployee().getId())) {
+    ---
+    >         if (role == RoleCode.MANAGER && true) {
+M08 ОБНАРУЖЕНО (1471 с): Права: руководитель управляет любым сотрудником — AccessPolicyTest.manageScope;AccrualServiceTest.managerCannotAccrueForeignEmployee;BusinessFlowSmokeTest.manualAccrualPreviewAndCreate;CorrectionServiceTest.managerCorrectsOnlyOwnTeam;RestApiSecurityTest.validationAndDomainErrorsMapToStatusAndCode
+    110c110
+    <             int total = roundToStep(base.value().multiply(campaign.getCoefficient()), roundTo);
+    ---
+    >             int total = roundToStep(base.value(), roundTo);
+M09 ОБНАРУЖЕНО (327 с): Расчёт: коэффициент кампании не применяется — BonusCalculationServiceTest.appliesActiveCampaignCoefficient;BonusCalculationServiceTest.skipsCampaignWithoutBudgetLeft;BonusCalculationServiceTest.unlimitedCampaignDoesNotCheckSpent;BusinessFlowSmokeTest.calculationMatchesSeedOperations;BusinessFlowSmokeTest.eventProcessingIsIdempotentAndBatchSurvivesFailures;CampaignLifecycleTest.plannedCampaignAppliesWhenStarted;EventProcessingServiceTest.activeRuleAppliesCoefficients;EventProcessingServiceTest.savesAccrualAfterCalculation
+    103c103
+    <             account.applyDelta(op.getAmount(), now);
+    ---
+    >             // mutant
+M10 ОБНАРУЖЕНО (34 с): Контроль финотдела: подтверждение не меняет баланс — BusinessFlowSmokeTest.correctionAndReview;ReviewServiceTest.approvedAccrualUpdatesBalance;ReviewServiceTest.secondApprovalIsRejected
+    43c43
+    <     public void onOperationRegistered(OperationRegisteredEvent event) {
+    ---
+    >     public void onOperationRegistered(OperationRegisteredEvent event) { if (event != null) return;
+M11 ОБНАРУЖЕНО (929 с): Аудит: операции не записываются в журнал — AuditListenerTest.autoAccrualIsRecordedAsSystem;AuditListenerTest.correctionIsRecorded;BusinessFlowSmokeTest.manualAccrualPreviewAndCreate;RequirementsRestApiTest.correctionIsJournaled
+    10c10
+    <     public static final String ACCOUNT_HOLDER = "hasAnyRole('employee', 'manager', 'hr')";
+    ---
+    >     public static final String ACCOUNT_HOLDER = "hasAnyRole('employee', 'manager', 'hr', 'finance')";
+M12 НЕ ОБНАРУЖЕНО (496 с): Ролевая модель: финотделу открыт «Мой баланс» — 
+    84c84
+    <         if (employeeRepository.existsByEmailIgnoreCase(email)) {
+    ---
+    >         if (false) {
+M13 ОБНАРУЖЕНО (34 с): Пользователи: не проверяется дубль email — RequirementsRestApiTest.userLifecycle;UserAdminServiceTest.duplicateEmailIsRejected
+M14: подстановка не применилась — пропуск
+Исходная копия: mvn test
+    24c24
+    <         if (uri == null || uri.getHost() == null || !"https".equals(uri.getScheme().toLowerCase(Locale.ROOT))) {
+    ---
+    >         if (uri == null || uri.getHost() == null || "never".equals(uri.getScheme().toLowerCase(Locale.ROOT))) {
+M14 ОБНАРУЖЕНО (32 с): Интеграции: разрешён адрес HTTP — IntegrationAdminServiceTest.connectionTestWithHttpFails;IntegrationAdminServiceTest.failedCheckDoesNotSave;RequirementsRestApiTest.integrationSettings;SimulatedIntegrationProbeTest.nonHttpsRejected

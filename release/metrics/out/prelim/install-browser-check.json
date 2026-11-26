@@ -1,0 +1,27 @@
+{
+  "date": "25.11.2026, 16:02:58",
+  "base": "http://localhost:8080",
+  "steps": [
+    {
+      "name": "Открыть http://localhost:8080",
+      "sec": 1.42,
+      "detail": "HTTP 200, адрес /login, заголовок «Вход»"
+    },
+    {
+      "name": "Войти как сотрудник",
+      "sec": 1.8,
+      "detail": "адрес /me, «Здравствуйте, Анна», баланс 8 900 Б"
+    },
+    {
+      "name": "Глубокая ссылка: открыть /history и обновить страницу",
+      "sec": 1.24,
+      "detail": "HTTP 200 и 200 (после обновления), заголовок «История операций»"
+    },
+    {
+      "name": "Открыть документацию API /swagger-ui.html",
+      "sec": 0.83,
+      "detail": "HTTP 200, итоговый адрес /swagger-ui/index.html, «TechnoSoft Bonus REST API», операций 34"
+    }
+  ],
+  "consoleErrors": []
+}
